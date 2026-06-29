@@ -1,0 +1,39 @@
+import { streamObject } from "ai";
+import { anthropic } from "@ai-sdk/anthropic";
+import { analysisSchema } from "@/lib/schema";
+import { analysisPrompt } from "@/lib/prompts";
+import { cacheSet } from "@/lib/cache";
+import { MODEL, ROUTE_MAX_DURATION } from "@/lib/config";
+
+export const maxDuration = ROUTE_MAX_DURATION;
+
+// Phase 2 of the flow: stream the per-ingredient analysis so cards render one by one.
+// Consumed on the client by useObject. Writes the finished result to cache on completion.
+export async function POST(req: Request) {
+  const body = await req.json();
+  const { product_name, retailer, ingredients_list, percentages, key, url } = body;
+
+  const result = streamObject({
+    model: anthropic(MODEL),
+    schema: analysisSchema,
+    prompt: analysisPrompt({
+      product_name,
+      retailer,
+      ingredients_list: ingredients_list ?? [],
+      percentages: percentages ?? [],
+    }),
+    onFinish: async ({ object }) => {
+      // Cache the complete analysis keyed by URL hash (7-day TTL handled in cacheSet).
+      if (object && key) {
+        await cacheSet(key, {
+          product_name,
+          retailer,
+          url,
+          ingredients: object.ingredients,
+        });
+      }
+    },
+  });
+
+  return result.toTextStreamResponse();
+}
