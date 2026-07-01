@@ -7,9 +7,10 @@ import { cacheGet } from "@/lib/cache";
 import { hashUrl } from "@/lib/hash";
 import { extractionPrompt } from "@/lib/prompts";
 import { isSupportedUrl } from "@/lib/retailers";
-import { MODEL, ROUTE_MAX_DURATION } from "@/lib/config";
+import { MODEL } from "@/lib/config";
+import { MOCK_EXTRACT } from "@/lib/mock";
 
-export const maxDuration = ROUTE_MAX_DURATION;
+export const maxDuration = 60;
 
 // Phase 1 of the flow: validate -> cache check -> Firecrawl -> Claude extract.
 // Returns either a full cached result (client renders instantly) or the header
@@ -24,6 +25,14 @@ export async function POST(req: Request) {
 
   if (!url || typeof url !== "string" || !isSupportedUrl(url)) {
     return NextResponse.json({ error: "unsupported_url" }, { status: 400 });
+  }
+
+  // Dev/design mode: return a canned extraction so the whole UI runs with no keys.
+  // Gated on the key being ABSENT, so a stray MOCK_PIPELINE can never shadow a real
+  // key. Pair with MOCK_PIPELINE in /api/analyze, which streams the matching cards.
+  if (process.env.MOCK_PIPELINE && !process.env.ANTHROPIC_API_KEY) {
+    await new Promise((r) => setTimeout(r, 600)); // lets you see "Reading ingredients…"
+    return NextResponse.json(MOCK_EXTRACT);
   }
 
   const key = hashUrl(url);

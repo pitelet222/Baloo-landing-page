@@ -11,6 +11,12 @@ body {
   background-color: theme("colors.canvas");
   color: theme("colors.ink");
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background-color: theme("colors.natural.soft");
+  color: theme("colors.ink");
 }
 
 /* Respect reduced motion. */

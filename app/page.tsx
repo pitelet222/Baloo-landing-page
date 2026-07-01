@@ -8,6 +8,9 @@ import { LoadingState } from "@/components/LoadingState";
 import { ResultsView } from "@/components/ResultsView";
 import { EmailCapture } from "@/components/EmailCapture";
 import { RetailerRow } from "@/components/RetailerRow";
+import { HowItWorks } from "@/components/HowItWorks";
+import { Wordmark } from "@/components/Wordmark";
+import { Footer } from "@/components/Footer";
 
 const FRIENDLY_ERROR =
   "We couldn't read that page. Try a direct product link from Whole Foods, Ocado, Tesco, Target, or Kroger.";
@@ -85,52 +88,80 @@ export default function Home() {
 
   const streamed = (object?.ingredients ?? []) as Partial<Ingredient>[];
   const ingredients = cached ?? streamed;
+  const idle = phase === "idle";
   const busy = phase === "reading" || (phase === "analyzing" && isLoading);
-  const streamError = error && phase === "analyzing";
-  const showResults = header && ingredients.length > 0 && !streamError;
-  const showEmail = phase === "done" || (cached === null && !isLoading && ingredients.length > 0);
+  const analysing = phase === "analyzing" && isLoading;
+  const streamError = Boolean(error) && phase === "analyzing";
+  const hasHeader = Boolean(header) && !errorMsg && !streamError;
+  const showResults = hasHeader && (ingredients.length > 0 || analysing);
+  const showEmail = hasHeader && ingredients.length > 0 && !analysing;
 
   return (
-    <main className="mx-auto min-h-screen max-w-tool px-5 py-16 sm:py-24">
-      <header className="mb-10">
-        <span className="font-display text-xl font-semibold tracking-tight text-ink">Baloo</span>
-      </header>
+    <div className="relative min-h-screen">
+      {/* Soft top wash — warmth without color, fades to canvas. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[460px] bg-[radial-gradient(60%_100%_at_50%_0%,theme(colors.natural.soft)_0%,transparent_72%)] opacity-70"
+      />
 
-      <h1 className="font-display text-4xl leading-tight text-ink sm:text-5xl">
-        Know what&apos;s in your food.
-      </h1>
-      <p className="mt-3 text-muted">
-        Paste a supermarket product link and see what every ingredient is — and why it&apos;s there.
-      </p>
+      <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5">
+        <header className="flex justify-center pt-8 sm:pt-10">
+          <Wordmark className="text-xl" />
+        </header>
 
-      <div className="mt-8">
-        <UrlForm onAnalyze={handleAnalyze} busy={busy} />
-        {phase === "idle" && <RetailerRow />}
-      </div>
+        <section className={`text-center ${idle ? "pt-14 sm:pt-20" : "pt-8"}`}>
+          {idle && (
+            <>
+              <h1 className="font-display text-4xl leading-[1.1] text-ink sm:text-5xl">
+                Know what&apos;s in your food.
+              </h1>
+              <p className="mx-auto mt-4 max-w-lg text-lg text-muted">
+                Paste a supermarket product link and see what every ingredient is — and why
+                it&apos;s there.
+              </p>
+            </>
+          )}
 
-      {phase === "reading" && <LoadingState phase="reading" />}
-      {phase === "analyzing" && ingredients.length === 0 && !streamError && (
-        <LoadingState phase="analyzing" />
-      )}
+          <div className={idle ? "mt-9" : ""}>
+            <UrlForm onAnalyze={handleAnalyze} busy={busy} />
+          </div>
 
-      {(errorMsg || streamError) && (
-        <div className="mt-10 rounded-xl border border-line bg-paper p-6 text-center">
-          <p className="text-ink">{errorMsg ?? FRIENDLY_ERROR}</p>
-          <p className="mt-1 text-sm text-muted">Paste another link above to try again.</p>
-        </div>
-      )}
+          {idle && (
+            <>
+              <RetailerRow />
+              <p className="mt-4 text-xs text-muted/70">
+                Free &middot; No sign-up &middot; Reads the actual product label
+              </p>
+            </>
+          )}
+        </section>
 
-      {showResults && (
-        <ResultsView
-          productName={header!.product_name}
-          retailer={header!.retailer}
-          sourceUrl={header!.url}
-          count={header!.count}
-          ingredients={ingredients}
-        />
-      )}
+        {idle && <HowItWorks />}
 
-      {showResults && showEmail && <EmailCapture />}
-    </main>
+        {phase === "reading" && <LoadingState phase="reading" />}
+
+        {(errorMsg || streamError) && (
+          <div className="mt-12 rounded-2xl border border-line bg-paper p-6 text-center shadow-card animate-fade-in">
+            <p className="text-ink">{errorMsg ?? FRIENDLY_ERROR}</p>
+            <p className="mt-1 text-sm text-muted">Paste another link above to try again.</p>
+          </div>
+        )}
+
+        {showResults && (
+          <ResultsView
+            productName={header!.product_name}
+            retailer={header!.retailer}
+            sourceUrl={header!.url}
+            count={header!.count}
+            ingredients={ingredients}
+            loading={analysing}
+          />
+        )}
+
+        {showEmail && <EmailCapture />}
+
+        <Footer />
+      </main>
+    </div>
   );
 }
