@@ -47,11 +47,18 @@ Percentages where known: ${pct}
 For each ingredient, in the same order, return:
 - name
 - tag: "Natural" or "Processed"
-- what_it_is: a plain-language explanation of the ingredient itself
-- why_its_here: the role it plays in this specific product
+- what_it_is: 2-3 informative sentences explaining the ingredient itself, written to hold true of
+  this ingredient in general (not just in this product, so the explanation is reusable): its
+  origin/source, what it is made from or how it is produced, and the form it usually takes. Be
+  specific and genuinely educational, not generic.
+- why_its_here: 2-3 sentences on the concrete role it plays in THIS product — the function it
+  serves (e.g. texture, moisture, preservation, flavour, colour, emulsifying, fortification) and
+  why a product like this one includes it. Tie it to this product, not to ingredients in general.
 - percentage: the listed percentage (e.g. "1%") or null
 - percentage_note: if a percentage is present, whether that amount is meaningful or mainly
   cosmetic; otherwise null
 
-Keep the ingredients in label order. Do not reorder them.`;
+Explain and give context in the calm nutritionist voice above — never judge, never call an
+ingredient good or bad, and never tell the user what to buy or avoid. Keep the ingredients in
+label order. Do not reorder them.`;
 }
