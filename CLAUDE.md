@@ -29,6 +29,16 @@ and app pages. This is the prototype for a future mobile app; keep the pipeline 
   "We couldn't read that page. Try a direct product link from Whole Foods, Ocado, Tesco, Target,
   or Kroger."
 
+## Data layer (Phase 2 — scan logging)
+- On every SUCCESSFUL analysis, `lib/stats.ts` logs a scan to Upstash: a capped "recent scans" list
+  plus "top retailers" and "top countries" sorted sets. Powers the homepage board (Order D) and,
+  later, B2B trends (which graduate to Postgres).
+- `recordScan` is fire-and-forget and MUST never slow or break the user flow; like the cache, it is
+  a silent no-op when the Upstash env vars are absent.
+- Privacy: NO PII. Product name, retailer, country-level (Vercel geolocation), and timestamp only —
+  no user identity, no exact location, no dedup by user.
+- Feature flag: `SHOW_TOP_SCANNERS` stays off until accounts exist.
+
 ## Tone for the analysis model (verbatim)
 "You are a knowledgeable, calm nutritionist. Education before persuasion. Never alarmist. Never
 tell the user what to buy or avoid. Explain what ingredients are and why they are used. Context

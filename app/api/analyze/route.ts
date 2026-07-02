@@ -5,6 +5,8 @@ import { analysisPrompt } from "@/lib/prompts";
 import { cacheSet } from "@/lib/cache";
 import { MODEL } from "@/lib/config";
 import { mockAnalyzeStream } from "@/lib/mock";
+import { recordScan } from "@/lib/stats";
+import { geolocation } from "@vercel/functions";
 
 export const maxDuration = 60;
 
@@ -17,6 +19,9 @@ export async function POST(req: Request) {
 
   const body = await req.json();
   const { product_name, retailer, ingredients_list, percentages, key, url } = body;
+
+  // Country-level only, for the scan board. Undefined in local dev (no Vercel headers).
+  const { country } = geolocation(req);
 
   const result = streamObject({
     model: anthropic(MODEL),
@@ -36,6 +41,11 @@ export async function POST(req: Request) {
           url,
           ingredients: object.ingredients,
         });
+      }
+      // Log the scan for the homepage board. Runs after the stream is delivered, so it never
+      // slows the user; recordScan swallows its own errors. Only a real result counts.
+      if (object?.ingredients?.length) {
+        await recordScan({ product_name, retailer, country });
       }
     },
   });

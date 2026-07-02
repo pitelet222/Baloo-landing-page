@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { generateObject } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { extractionSchema } from "@/lib/schema";
@@ -9,6 +9,8 @@ import { extractionPrompt } from "@/lib/prompts";
 import { isSupportedUrl } from "@/lib/retailers";
 import { MODEL } from "@/lib/config";
 import { MOCK_EXTRACT } from "@/lib/mock";
+import { recordScan } from "@/lib/stats";
+import { geolocation } from "@vercel/functions";
 
 export const maxDuration = 60;
 
@@ -40,6 +42,10 @@ export async function POST(req: Request) {
   // Full analysis already cached for this URL?
   const cached = await cacheGet(key);
   if (cached) {
+    // A repeat scan is still a successful result — log it for the board without slowing the
+    // instant cache response (after() runs the write once the response has been sent).
+    const { country } = geolocation(req);
+    after(() => recordScan({ product_name: cached.product_name, retailer: cached.retailer, country }));
     return NextResponse.json({ cached: true, key, ...cached });
   }
 
