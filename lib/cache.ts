@@ -35,3 +35,26 @@ export async function cacheSet(key: string, value: CachedResult): Promise<void> 
     console.error("cacheSet error:", err);
   }
 }
+
+// Plain-string variants for small derived artefacts (e.g. the nutrition context sentence,
+// keyed per product×profile). Same lazy client, same silent no-op without Upstash.
+export async function cacheGetText(key: string): Promise<string | null> {
+  const c = client();
+  if (!c) return null;
+  try {
+    return (await c.get<string>(`baloo:${key}`)) ?? null;
+  } catch (err) {
+    console.error("cacheGetText error:", err);
+    return null;
+  }
+}
+
+export async function cacheSetText(key: string, value: string): Promise<void> {
+  const c = client();
+  if (!c) return;
+  try {
+    await c.set(`baloo:${key}`, value, { ex: CACHE_TTL_SECONDS });
+  } catch (err) {
+    console.error("cacheSetText error:", err);
+  }
+}

@@ -78,3 +78,41 @@ Explain and give context in the calm nutritionist voice above — never judge, n
 ingredient good or bad, and never tell the user what to buy or avoid. Keep the ingredients in
 label order. Do not reorder them.`;
 }
+
+// --- Nutrition context line (Order B3): Claude writes the words, code supplies the numbers ---
+export function nutritionContextPrompt(input: {
+  product_name: string;
+  serving_size: string | null;
+  basis: "serving" | "100g";
+  profileLabel: string;
+  highlights: { name: string; pct: number }[];
+}): string {
+  const portion =
+    input.basis === "serving"
+      ? `one serving (${input.serving_size ?? "serving size not stated"})`
+      : "each 100 g / 100 ml (no serving size is stated)";
+  const facts = input.highlights
+    .map((h) => `${h.name}: ${h.pct}% of the reference daily intake`)
+    .join("; ");
+
+  return `You are a knowledgeable, calm nutritionist.
+Education before persuasion. Never alarmist.
+Never tell the user what to buy or avoid.
+Explain what things are and why they are used.
+Context over judgment.
+
+Product: ${input.product_name}
+Portion basis: ${portion}
+Reference profile: ${input.profileLabel}
+Pre-computed facts (already calculated in code — the ONLY numbers you may use): ${facts}
+
+Write ONE short sentence of neutral context from these facts, in the voice above. You may add a
+brief closing clause in the spirit of "a sense of how a portion adds up, not a verdict."
+
+Rules:
+- Use ONLY the numbers given. Never calculate, convert, extrapolate, or invent any number.
+- Phrase as factual context ("about X% of the reference daily fat for ...").
+- Never a judgment: no "too much", "high", "bad", "unhealthy", "watch out".
+- Never advice: nothing about limiting, avoiding, choosing, or moderating.
+- Plain text only, no markdown.`;
+}

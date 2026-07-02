@@ -52,6 +52,10 @@ and app pages. This is the prototype for a future mobile app; keep the pipeline 
 - Profiles = UK reference daily intakes in `lib/profile.ts` (PHE "Government Dietary
   Recommendations" 2016 + NHS front-of-pack RIs; sources cited in the file). Presets only, no
   custom profiles in v1. Choice persists in localStorage — no accounts.
+- Context line: `/api/nutrition-context` generates it once per product×profile (Upstash-cached,
+  7 days). Percentages and highlight selection are computed in code (`lib/nutrition.ts`); Claude
+  only phrases the given numbers, and a deterministic fallback sentence covers missing keys or
+  model errors so the Nutrition tab never blocks.
 
 ## Tone for the analysis model (verbatim)
 "You are a knowledgeable, calm nutritionist. Education before persuasion. Never alarmist. Never
