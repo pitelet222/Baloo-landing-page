@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { experimental_useObject as useObject } from "@ai-sdk/react";
-import { analysisSchema, type Ingredient } from "@/lib/schema";
+import { analysisSchema, type Ingredient, type Nutrition } from "@/lib/schema";
 import { UrlForm } from "@/components/UrlForm";
 import { LoadingState } from "@/components/LoadingState";
 import { ResultsView } from "@/components/ResultsView";
@@ -16,7 +16,14 @@ const FRIENDLY_ERROR =
   "We couldn't read that page. Try a direct product link from Whole Foods, Ocado, Tesco, Target, or Kroger.";
 
 type Phase = "idle" | "reading" | "analyzing" | "done" | "error";
-type Header = { product_name: string; retailer: string; url: string; count: number };
+type Header = {
+  product_name: string;
+  retailer: string;
+  url: string;
+  count: number;
+  nutrition?: Nutrition;
+  key?: string;
+};
 
 export default function Home() {
   const [phase, setPhase] = useState<Phase>("idle");
@@ -59,6 +66,8 @@ export default function Home() {
           retailer: data.retailer,
           url: data.url,
           count: data.ingredients.length,
+          nutrition: data.nutrition,
+          key: data.key,
         });
         setCached(data.ingredients);
         setPhase("done");
@@ -70,6 +79,8 @@ export default function Home() {
         retailer: data.retailer,
         url: data.url,
         count: data.ingredients_list.length,
+        nutrition: data.nutrition,
+        key: data.key,
       });
       setPhase("analyzing");
       submit({
@@ -155,6 +166,8 @@ export default function Home() {
             sourceUrl={header!.url}
             count={header!.count}
             ingredients={ingredients}
+            nutrition={header!.nutrition}
+            cacheKey={header!.key}
             loading={analysing}
           />
         )}
