@@ -39,6 +39,20 @@ and app pages. This is the prototype for a future mobile app; keep the pipeline 
   no user identity, no exact location, no dedup by user.
 - Feature flag: `SHOW_TOP_SCANNERS` stays off until accounts exist.
 
+## Nutrition rules (Phase 2 — B1–B4)
+- Extraction (B1) captures the nutrition panel verbatim — values exactly as printed, never
+  invented or converted; empty when a page has no panel.
+- ALL arithmetic happens in code (`lib/nutrition.ts`, Order B3) — the model never calculates;
+  it only writes short, neutral context sentences around numbers computed in code.
+- NO health score, NO nutrient colour-coding (no red/green), NO good/bad verdicts. Bars and
+  numbers are neutral (ink-tinted); context, not judgment.
+- Nutrition context is general education, not advice: the disclaimer is always shown, and child
+  framing stays neutral and non-restrictive ("General estimate from public UK reference values
+  (FSA/NHS) — not personalised medical or dietary advice.").
+- Profiles = UK reference daily intakes in `lib/profile.ts` (PHE "Government Dietary
+  Recommendations" 2016 + NHS front-of-pack RIs; sources cited in the file). Presets only, no
+  custom profiles in v1. Choice persists in localStorage — no accounts.
+
 ## Tone for the analysis model (verbatim)
 "You are a knowledgeable, calm nutritionist. Education before persuasion. Never alarmist. Never
 tell the user what to buy or avoid. Explain what ingredients are and why they are used. Context
