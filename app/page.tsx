@@ -77,6 +77,7 @@ export default function Home() {
         retailer: data.retailer,
         ingredients_list: data.ingredients_list,
         percentages: data.percentages,
+        nutrition: data.nutrition,
         key: data.key,
         url: data.url,
       });

@@ -1,5 +1,41 @@
 import { z } from "zod";
 
+// --- Nutrition panel (captured in call 1, consumed by the Nutrition tab / lib/nutrition.ts) ---
+// Contract: values are strings copied EXACTLY as printed ("6.4", "<0.5") — number only, unit kept
+// separately — so label fidelity is preserved; downstream code does all parsing and arithmetic.
+export const nutrientSchema = z.object({
+  name: z
+    .string()
+    .describe(
+      'Canonical name: "Energy", "Fat", "Saturates", "Carbohydrate", "Sugars", "Fibre", ' +
+        '"Protein", "Salt" (use "Sodium" only if that is what the label prints)',
+    ),
+  per_100g: z
+    .string()
+    .nullable()
+    .describe('Value per 100g/100ml exactly as printed, number only (e.g. "6.4", "<0.5"); null if not shown'),
+  per_serving: z
+    .string()
+    .nullable()
+    .describe("Value per serving/portion exactly as printed, number only; null if not shown"),
+  unit: z.string().describe('The unit as printed: "kcal", "g", "mg"'),
+});
+export type Nutrient = z.infer<typeof nutrientSchema>;
+
+export const nutritionSchema = z.object({
+  serving_size: z
+    .string()
+    .nullable()
+    .describe('Serving size exactly as printed, e.g. "30 g (about 13 crisps)"; null if not stated'),
+  per: z
+    .enum(["100g", "serving", "both"])
+    .describe('Which basis the label provides; "100g" as placeholder when there is no panel'),
+  nutrients: z
+    .array(nutrientSchema)
+    .describe("Label row order preserved; EMPTY array when the page shows no nutrition panel"),
+});
+export type Nutrition = z.infer<typeof nutritionSchema>;
+
 // --- Call 1: extraction from page markdown ---
 export const extractionSchema = z.object({
   product_name: z.string().describe("The product's name as shown on the page"),
@@ -18,6 +54,7 @@ export const extractionSchema = z.object({
       }),
     )
     .describe("Any percentages listed on the label; empty array if none"),
+  nutrition: nutritionSchema,
 });
 export type Extraction = z.infer<typeof extractionSchema>;
 
@@ -41,9 +78,11 @@ export const analysisSchema = z.object({
 export type Analysis = z.infer<typeof analysisSchema>;
 
 // Shape stored in the cache and returned on a cache hit.
+// nutrition is optional so entries cached before Order B1 stay readable.
 export type CachedResult = {
   product_name: string;
   retailer: string;
   url: string;
   ingredients: Ingredient[];
+  nutrition?: Nutrition;
 };

@@ -9,6 +9,20 @@ export const MOCK_EXTRACT = {
   ingredients_raw: "Water, Oats 10%, Rapeseed Oil, Calcium Carbonate, Salt, Vitamins",
   ingredients_list: ["Water", "Oats", "Rapeseed Oil", "Calcium Carbonate", "Salt", "Vitamins (D2, Riboflavin, B12)"],
   percentages: [{ ingredient: "Oats", percentage: "10%" }],
+  nutrition: {
+    serving_size: "250 ml (a glass)",
+    per: "both" as const,
+    nutrients: [
+      { name: "Energy", per_100g: "60", per_serving: "150", unit: "kcal" },
+      { name: "Fat", per_100g: "3.0", per_serving: "7.5", unit: "g" },
+      { name: "Saturates", per_100g: "0.3", per_serving: "0.8", unit: "g" },
+      { name: "Carbohydrate", per_100g: "6.6", per_serving: "16.5", unit: "g" },
+      { name: "Sugars", per_100g: "4.1", per_serving: "10.3", unit: "g" },
+      { name: "Fibre", per_100g: "0.8", per_serving: "2.0", unit: "g" },
+      { name: "Protein", per_100g: "1.0", per_serving: "2.5", unit: "g" },
+      { name: "Salt", per_100g: "0.10", per_serving: "0.25", unit: "g" },
+    ],
+  },
 };
 
 const MOCK_INGREDIENTS: Ingredient[] = [

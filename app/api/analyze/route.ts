@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   if (process.env.MOCK_PIPELINE && !process.env.ANTHROPIC_API_KEY) return mockAnalyzeStream();
 
   const body = await req.json();
-  const { product_name, retailer, ingredients_list, percentages, key, url } = body;
+  const { product_name, retailer, ingredients_list, percentages, nutrition, key, url } = body;
 
   // Country-level only, for the scan board. Undefined in local dev (no Vercel headers).
   const { country } = geolocation(req);
@@ -40,6 +40,7 @@ export async function POST(req: Request) {
           retailer,
           url,
           ingredients: object.ingredients,
+          nutrition,
         });
       }
       // Log the scan for the homepage board. Runs after the stream is delivered, so it never

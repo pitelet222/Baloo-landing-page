@@ -10,10 +10,26 @@ Extract:
 3. The complete ingredient list, exactly as written, preserving the original order
 4. The ingredients split into an ordered array (same order as the label)
 5. Any ingredient percentages if listed (e.g. "sugar 12%")
+6. The nutrition facts panel, if the page shows one
 
 Ingredients on food labels are listed most-to-least by quantity, by law — preserve that order
 exactly. If the page has no ingredient list (a non-food item, a login wall, or a blocked page),
 return empty strings and empty arrays rather than guessing.
+
+For the nutrition panel:
+- Copy every value EXACTLY as printed — number only in per_100g / per_serving (e.g. "6.4",
+  "<0.5"), with the unit ("kcal", "g", "mg") in the unit field. Never invent, convert, or
+  round a number. Use null for any column the label doesn't show.
+- Use these canonical nutrient names: "Energy", "Fat", "Saturates", "Carbohydrate", "Sugars",
+  "Fibre", "Protein", "Salt" — use "Sodium" only if the label prints sodium instead of salt.
+  Keep the label's row order.
+- For energy, when the label shows both kJ and kcal, use the kcal figure (one row, unit "kcal");
+  if only kJ is printed, copy the kJ value with unit "kJ".
+- serving_size: the serving/portion description exactly as printed (e.g. "30 g (about 13
+  crisps)"); null if not stated. per: which basis the label provides ("100g", "serving", or
+  "both").
+- If there is no nutrition panel, return an empty nutrients array, serving_size null, and per
+  "100g" — never make numbers up.
 
 PAGE MARKDOWN:
 """
