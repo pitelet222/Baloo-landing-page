@@ -23,6 +23,7 @@ type Header = {
   count: number;
   nutrition?: Nutrition;
   key?: string;
+  product_summary?: string;
 };
 
 export default function Home() {
@@ -68,6 +69,7 @@ export default function Home() {
           count: data.ingredients.length,
           nutrition: data.nutrition,
           key: data.key,
+          product_summary: data.product_summary,
         });
         setCached(data.ingredients);
         setPhase("done");
@@ -168,6 +170,7 @@ export default function Home() {
             ingredients={ingredients}
             nutrition={header!.nutrition}
             cacheKey={header!.key}
+            productSummary={header!.product_summary ?? (object?.product_summary as string | undefined)}
             loading={analysing}
           />
         )}

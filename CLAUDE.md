@@ -57,6 +57,14 @@ and app pages. This is the prototype for a future mobile app; keep the pipeline 
   only phrases the given numbers, and a deterministic fallback sentence covers missing keys or
   model errors so the Nutrition tab never blocks.
 
+## Ingredient list rules (Order F)
+- The list is progressive: collapsed rows by default (rank, name, %, role microlabel, N/P pill),
+  the full Order-A explanation unfolds on tap. Multi-open accordion; label order absolute.
+- `role` is a neutral functional label and `product_summary` ONE neutral sentence — never
+  judgments. The read strip's counts are computed in code, never by the model.
+- Still no score, no "worth a look"-style flags, no judgment colours anywhere; the
+  Natural/Processed pill stays the only meaningful colour.
+
 ## Tone for the analysis model (verbatim)
 "You are a knowledgeable, calm nutritionist. Education before persuasion. Never alarmist. Never
 tell the user what to buy or avoid. Explain what ingredients are and why they are used. Context
