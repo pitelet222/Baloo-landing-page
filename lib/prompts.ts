@@ -63,6 +63,10 @@ Percentages where known: ${pct}
 For each ingredient, in the same order, return:
 - name
 - tag: "Natural" or "Processed"
+- role: a 2-4 word functional label for what it does in THIS product. Prefer one of: Base,
+  Sweetener, Thickener / stabiliser, Emulsifier, Preservative, Colour, Flavour,
+  Culture / ferment, Fortification, Oil / fat, Raising agent — but use another concise label
+  when none fits. Purely functional and neutral: never a judgment, never a warning.
 - what_it_is: 2-3 informative sentences explaining the ingredient itself, written to hold true of
   this ingredient in general (not just in this product, so the explanation is reusable): its
   origin/source, what it is made from or how it is produced, and the form it usually takes. Be
@@ -73,6 +77,11 @@ For each ingredient, in the same order, return:
 - percentage: the listed percentage (e.g. "1%") or null
 - percentage_note: if a percentage is present, whether that amount is meaningful or mainly
   cosmetic; otherwise null
+
+After all the ingredients, return product_summary: ONE calm, neutral sentence about the
+formulation as a whole (e.g. "Built mostly on recognisable kitchen ingredients, with two
+additives doing texture work."). Factual and descriptive only — no advice, no verdict, no
+"good/bad", no score-like language.
 
 Explain and give context in the calm nutritionist voice above — never judge, never call an
 ingredient good or bad, and never tell the user what to buy or avoid. Keep the ingredients in

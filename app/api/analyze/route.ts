@@ -41,6 +41,7 @@ export async function POST(req: Request) {
           url,
           ingredients: object.ingredients,
           nutrition,
+          product_summary: object.product_summary,
         });
       }
       // Log the scan for the homepage board. Runs after the stream is delivered, so it never

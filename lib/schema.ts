@@ -62,6 +62,11 @@ export type Extraction = z.infer<typeof extractionSchema>;
 export const ingredientSchema = z.object({
   name: z.string(),
   tag: z.enum(["Natural", "Processed"]),
+  role: z
+    .string()
+    .describe(
+      'A 2-4 word neutral functional label for what the ingredient does in THIS product, e.g. "Base", "Thickener / stabiliser", "Culture / ferment" — never a judgment',
+    ),
   what_it_is: z.string().describe("Plain-language explanation of the ingredient itself"),
   why_its_here: z.string().describe("Why it is in this specific product"),
   percentage: z.string().nullable().describe('e.g. "1%", or null if not listed'),
@@ -74,15 +79,25 @@ export type Ingredient = z.infer<typeof ingredientSchema>;
 
 export const analysisSchema = z.object({
   ingredients: z.array(ingredientSchema),
+  // Declared AFTER ingredients on purpose: streamObject emits JSON in schema property order,
+  // so the summary streams in only once every ingredient card is out — the read strip's
+  // "summary arrives last" behaviour (design handoff F2) with no orchestration code.
+  product_summary: z
+    .string()
+    .describe(
+      "ONE calm, neutral sentence about the formulation as a whole — no advice, no verdict",
+    ),
 });
 export type Analysis = z.infer<typeof analysisSchema>;
 
 // Shape stored in the cache and returned on a cache hit.
-// nutrition is optional so entries cached before Order B1 stay readable.
+// nutrition (pre-B1) and product_summary (pre-F1) are optional so older entries stay
+// readable; old cached ingredients also lack `role` at runtime — the UI reads defensively.
 export type CachedResult = {
   product_name: string;
   retailer: string;
   url: string;
   ingredients: Ingredient[];
   nutrition?: Nutrition;
+  product_summary?: string;
 };
