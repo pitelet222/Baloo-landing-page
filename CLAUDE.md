@@ -38,6 +38,8 @@ and app pages. This is the prototype for a future mobile app; keep the pipeline 
 - Privacy: NO PII. Product name, retailer, country-level (Vercel geolocation), and timestamp only —
   no user identity, no exact location, no dedup by user.
 - Feature flag: `SHOW_TOP_SCANNERS` stays off until accounts exist.
+- `/api/board` serves `getBoard()` + the `SHOW_TOP_SCANNERS` flag for the idle-homepage board,
+  briefly cached (s-maxage 60); load-time fetch only, no polling.
 
 ## Nutrition rules (Phase 2 — B1–B4)
 - Extraction (B1) captures the nutrition panel verbatim — values exactly as printed, never

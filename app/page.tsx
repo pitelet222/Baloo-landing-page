@@ -9,6 +9,7 @@ import { ResultsView } from "@/components/ResultsView";
 import { EmailCapture } from "@/components/EmailCapture";
 import { RetailerRow } from "@/components/RetailerRow";
 import { HowItWorks } from "@/components/HowItWorks";
+import { Board } from "@/components/Board";
 import { Wordmark } from "@/components/Wordmark";
 import { Footer } from "@/components/Footer";
 
@@ -151,6 +152,7 @@ export default function Home() {
         </section>
 
         {idle && <HowItWorks />}
+        {idle && <Board />}
 
         {phase === "reading" && <LoadingState phase="reading" />}
 

@@ -35,10 +35,17 @@ const config: Config = {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
+        // The board's live dot (Order D). Gentle by design; the global reduced-motion rule
+        // in globals.css zeroes it.
+        "pulse-dot": {
+          "0%, 100%": { opacity: "1", transform: "scale(1)" },
+          "50%": { opacity: "0.45", transform: "scale(0.7)" },
+        },
       },
       animation: {
         rise: "rise 0.35s ease-out both",
         "fade-in": "fade-in 0.5s ease-out both",
+        "pulse-dot": "pulse-dot 2.6s ease-in-out infinite",
       },
     },
   },
