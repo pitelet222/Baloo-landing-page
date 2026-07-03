@@ -1,4 +1,5 @@
 import { streamObject } from "ai";
+import { after } from "next/server";
 import { anthropic } from "@ai-sdk/anthropic";
 import { analysisSchema } from "@/lib/schema";
 import { analysisPrompt } from "@/lib/prompts";
@@ -32,9 +33,19 @@ export async function POST(req: Request) {
       ingredients_list: ingredients_list ?? [],
       percentages: percentages ?? [],
     }),
-    onFinish: async ({ object }) => {
-      // Cache the complete analysis keyed by URL hash (7-day TTL handled in cacheSet).
-      if (object && key) {
+  });
+
+  // Persist AFTER the response streams out. streamObject's own onFinish runs inside the stream
+  // lifecycle, but on Vercel the function is frozen the moment the response flushes, so those
+  // writes get dropped (observed in prod: neither the cache nor the scan persisted). after()
+  // keeps the function alive until this completes — the same pattern the extract cache-hit path
+  // uses. result.object resolves to the validated analysis once streaming finishes; it never
+  // slows the user, and errors are swallowed so the flow is never affected.
+  after(async () => {
+    try {
+      const object = await result.object;
+      if (!object?.ingredients?.length) return;
+      if (key) {
         await cacheSet(key, {
           product_name,
           retailer,
@@ -44,12 +55,10 @@ export async function POST(req: Request) {
           product_summary: object.product_summary,
         });
       }
-      // Log the scan for the homepage board. Runs after the stream is delivered, so it never
-      // slows the user; recordScan swallows its own errors. Only a real result counts.
-      if (object?.ingredients?.length) {
-        await recordScan({ product_name, retailer, country });
-      }
-    },
+      await recordScan({ product_name, retailer, country });
+    } catch (err) {
+      console.error("analyze persist error:", err);
+    }
   });
 
   return result.toTextStreamResponse();
