@@ -1,0 +1,184 @@
+"use client";
+
+// Sign in / sign up / upgrade modal (Order G2). Functional and token-styled; D-G2 restyles
+// later. House rule: friendly messages only, never raw errors.
+
+import { useEffect, useState } from "react";
+import { supabaseBrowser } from "@/lib/supabase/client";
+
+export type AuthMode = "signin" | "signup" | "upgrade";
+
+function friendly(message: string | undefined, mode: AuthMode): string {
+  const m = message ?? "";
+  if (m.includes("Invalid login credentials")) return "That email and password don't match.";
+  if (m.includes("already registered") || m.includes("already been registered"))
+    return "That email already has an account — sign in instead.";
+  if (m.toLowerCase().includes("password")) return "Passwords need at least 6 characters.";
+  if (m.includes("Anonymous sign-ins are disabled"))
+    return "Guest mode isn't switched on yet — use email for now.";
+  if (m.includes("provider is not enabled") || m.includes("Unsupported provider"))
+    return "Google sign-in isn't set up yet — use email for now.";
+  return mode === "upgrade"
+    ? "We couldn't save the account — try again."
+    : "Something went wrong — try again.";
+}
+
+export function AuthModal({
+  mode: initialMode,
+  onClose,
+  onDone,
+}: {
+  mode: AuthMode;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const [mode, setMode] = useState<AuthMode>(initialMode);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  async function submit() {
+    const sb = supabaseBrowser();
+    if (!sb || busy) return;
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      if (mode === "signin") {
+        const { error } = await sb.auth.signInWithPassword({ email, password });
+        if (error) return setError(friendly(error.message, mode));
+        onDone();
+      } else if (mode === "signup") {
+        const { data, error } = await sb.auth.signUp({ email, password });
+        if (error) return setError(friendly(error.message, mode));
+        if (!data.session) {
+          setNotice("Almost there — check your inbox to confirm your email.");
+          return;
+        }
+        onDone();
+      } else {
+        // upgrade: attach email+password to the CURRENT (anonymous) user — same user id, so
+        // everything already created as a guest survives.
+        const { error } = await sb.auth.updateUser({ email, password });
+        if (error) return setError(friendly(error.message, mode));
+        setNotice("Saved — if we sent you a confirmation email, click it to finish.");
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function google() {
+    const sb = supabaseBrowser();
+    if (!sb) return;
+    setError(null);
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (error) setError(friendly(error.message, mode));
+  }
+
+  async function guest() {
+    const sb = supabaseBrowser();
+    if (!sb || busy) return;
+    setBusy(true);
+    setError(null);
+    const { error } = await sb.auth.signInAnonymously();
+    setBusy(false);
+    if (error) return setError(friendly(error.message, mode));
+    onDone();
+  }
+
+  const title =
+    mode === "signin" ? "Sign in" : mode === "signup" ? "Create your account" : "Save your account";
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/20 p-5"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="w-full max-w-sm animate-rise rounded-2xl border border-line bg-paper p-6 shadow-hero">
+        <h2 className="font-display text-xl text-ink">{title}</h2>
+        {mode === "upgrade" && (
+          <p className="mt-1 text-sm text-muted">
+            Keep everything you&apos;ve made as a guest — just add an email and password.
+          </p>
+        )}
+
+        <div className="mt-4 flex flex-col gap-2">
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@email.com"
+            aria-label="Email"
+            className="rounded-lg border border-line bg-canvas px-4 py-2.5 text-ink outline-none transition focus:border-natural focus:ring-2 focus:ring-natural/20"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") submit();
+            }}
+            placeholder="Password"
+            aria-label="Password"
+            className="rounded-lg border border-line bg-canvas px-4 py-2.5 text-ink outline-none transition focus:border-natural focus:ring-2 focus:ring-natural/20"
+          />
+          <button
+            onClick={submit}
+            disabled={busy || !email || !password}
+            className="mt-1 rounded-lg bg-ink px-5 py-2.5 font-medium text-paper transition hover:bg-ink/85 disabled:opacity-50"
+          >
+            {busy ? "One moment…" : title}
+          </button>
+        </div>
+
+        {error && (
+          <p className="mt-3 text-sm text-processed" role="alert">
+            {error}
+          </p>
+        )}
+        {notice && <p className="mt-3 text-sm text-natural">{notice}</p>}
+
+        {mode !== "upgrade" && (
+          <>
+            <button
+              onClick={google}
+              className="mt-3 w-full rounded-lg border border-line bg-paper px-5 py-2.5 text-sm font-medium text-ink transition hover:bg-canvas"
+            >
+              Continue with Google
+            </button>
+            <div className="mt-4 flex items-center justify-between text-sm">
+              {mode === "signin" ? (
+                <button onClick={() => setMode("signup")} className="text-muted underline decoration-line underline-offset-2 hover:text-ink">
+                  New here? Create an account
+                </button>
+              ) : (
+                <button onClick={() => setMode("signin")} className="text-muted underline decoration-line underline-offset-2 hover:text-ink">
+                  Have an account? Sign in
+                </button>
+              )}
+              <button onClick={guest} className="text-muted underline decoration-line underline-offset-2 hover:text-ink">
+                Continue without an account
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

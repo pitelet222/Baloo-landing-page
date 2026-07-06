@@ -5,6 +5,7 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 config({ path: ".env.development.local" }); // vercel env pull target (Supabase integration vars)
 
+import { createClient } from "@supabase/supabase-js";
 import { db } from "../lib/db";
 import { ingredientProfileItems, ingredientProfiles, nutrition } from "../lib/db/schema";
 import {
@@ -14,15 +15,44 @@ import {
 import { upsertProfile } from "../lib/db/queries/profiles";
 import { addListItem, createList, getListBySlug, reorderListItems } from "../lib/db/queries/lists";
 
+// Migration 0002 ties profiles to auth.users, so the seed profile needs a REAL auth user —
+// created idempotently via the admin API (service key).
+async function ensureDevAuthUser(): Promise<string> {
+  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SECRET_KEY;
+  if (!url || !serviceKey) {
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_SECRET_KEY) + SUPABASE_URL are required to seed — run `npx vercel env pull .env.development.local` first.",
+    );
+  }
+  const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
+  const email = "dev@baloo.life";
+
+  const { data: list, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
+  if (listErr) throw listErr;
+  const existing = list.users.find((u) => u.email === email);
+  if (existing) return existing.id;
+
+  const { data: created, error } = await admin.auth.admin.createUser({
+    email,
+    password: "baloo-dev-password-1",
+    email_confirm: true,
+  });
+  if (error || !created.user) throw error ?? new Error("createUser returned no user");
+  return created.user.id;
+}
+
 async function main() {
   const dbi = db();
   if (!dbi) {
-    console.error("DATABASE_URL is not set in .env.local — create the Supabase project first (step B).");
+    console.error("No database URL found — run `npx vercel env pull .env.development.local` first (step B).");
     process.exit(1);
   }
 
-  // 1 · demo profile (auth-less in G1; G2 ties profiles to auth.users)
+  // 1 · demo auth user + profile (id = auth.users.id per the 0002 FK)
+  const authUserId = await ensureDevAuthUser();
   const profile = await upsertProfile(dbi, {
+    id: authUserId,
     handle: "baloo-dev",
     displayName: "Baloo Dev",
     bio: "Seed profile for local development.",
