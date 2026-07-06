@@ -3,6 +3,7 @@
 // helper. Idempotent: safe to re-run (upserts + existence checks). Run: npm run db:seed
 import { config } from "dotenv";
 config({ path: ".env.local" });
+config({ path: ".env.development.local" }); // vercel env pull target (Supabase integration vars)
 
 import { db } from "../lib/db";
 import { ingredientProfileItems, ingredientProfiles, nutrition } from "../lib/db/schema";

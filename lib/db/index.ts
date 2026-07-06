@@ -13,7 +13,11 @@ let instance: Db | null = null;
 
 export function db(): Db | null {
   if (instance) return instance;
-  const url = process.env.DATABASE_URL;
+  // DATABASE_URL for manual setups; POSTGRES_URL / POSTGRES_PRISMA_URL are what the
+  // Vercel↔Supabase integration injects (both pooled). Prefer POSTGRES_URL (no Prisma-specific
+  // query params).
+  const url =
+    process.env.DATABASE_URL ?? process.env.POSTGRES_URL ?? process.env.POSTGRES_PRISMA_URL;
   if (!url) return null;
   // prepare:false is required by Supabase's transaction pooler (PgBouncer transaction mode
   // doesn't support prepared statements).

@@ -2,6 +2,7 @@
 // convergence, label-order items, list ordering. Exit 0 = foundation healthy. Run: npm run db:check
 import { config } from "dotenv";
 config({ path: ".env.local" });
+config({ path: ".env.development.local" }); // vercel env pull target (Supabase integration vars)
 
 import { db } from "../lib/db";
 import {
