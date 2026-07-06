@@ -41,6 +41,19 @@ and app pages. This is the prototype for a future mobile app; keep the pipeline 
 - `/api/board` serves `getBoard()` + the `SHOW_TOP_SCANNERS` flag for the idle-homepage board,
   briefly cached (s-maxage 60); load-time fetch only, no polling.
 
+## Data layer (Phase 3 — community platform, Orders G1–G9)
+- Postgres via Supabase + Drizzle: schema in `lib/db/schema.ts` (source of truth; migrations
+  generated into `drizzle/`), lazy client in `lib/db/index.ts` — **null when DATABASE_URL is
+  absent**, the app must keep running without it (same optional-infra rule as the Redis cache).
+- Two invariants: products dedupe on `canonical_key` (barcode, else normalised brand+name+size —
+  everyone converges on ONE row per real product), and ingredient `what_it_is` is cached
+  product-INDEPENDENTLY on `ingredients` while `why_its_here`/`role` live per-product on
+  `ingredient_profile_items`.
+- Ingredient profiles are versioned, never deleted (`is_active` flags the current one).
+- RLS is defence-in-depth for client access paths (`drizzle/0001_rls.sql`); server-side Drizzle
+  bypasses it — API routes enforce auth in code (G2 `requireUser`).
+- Full model + build orders: `Baloo_Phase3_Full_Build_Guide.md`.
+
 ## Nutrition rules (Phase 2 — B1–B4)
 - Extraction (B1) captures the nutrition panel verbatim — values exactly as printed, never
   invented or converted; empty when a page has no panel.

@@ -1,0 +1,283 @@
+// Phase 3 data model (Order G1) — the Part-II schema from Baloo_Phase3_Full_Build_Guide.md.
+// Drizzle tables for Supabase Postgres. This file is the source of truth; migrations are
+// generated from it (npm run db:generate). The Zod AI shapes stay in lib/schema.ts — the two
+// deliberately don't merge: this is storage, that is model I/O.
+//
+// Conventions:
+// - uuid PKs default gen_random_uuid(); created_at timestamptz default now().
+// - pgEnum only for the stable discriminators (tag, per). Evolving ones (source, verb,
+//   target_type, status) are text + exported TS unions — Postgres enum migrations are painful
+//   and these sets will grow.
+// - profiles.id will equal auth.users.id from G2 onward; the FK to auth.users is added by a G2
+//   migration (the auth schema doesn't exist until Supabase Auth is wired), which keeps G1
+//   seedable and self-contained.
+
+import {
+  boolean,
+  index,
+  integer,
+  jsonb,
+  pgEnum,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+  type AnyPgColumn,
+} from "drizzle-orm/pg-core";
+import type { Nutrient } from "../schema";
+
+// ── Stable enums ──────────────────────────────────────────────────────────────────────────────
+export const tagEnum = pgEnum("ingredient_tag", ["Natural", "Processed"]);
+export const perEnum = pgEnum("nutrition_per", ["100g", "serving", "both"]);
+
+// ── Evolving discriminators (text columns + TS unions) ───────────────────────────────────────
+export type ProductSource = "user_scan" | "open_food_facts" | "go_upc";
+export type VoteTargetType = "list" | "product" | "comment";
+export type ActivityVerb =
+  | "created_list"
+  | "added_item"
+  | "voted"
+  | "commented"
+  | "followed"
+  | "scanned";
+export type ReportTargetType = "list" | "product" | "comment" | "profile";
+export type ReportStatus = "open" | "reviewed" | "actioned";
+
+// ── Identity ──────────────────────────────────────────────────────────────────────────────────
+export const profiles = pgTable("profiles", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  handle: text("handle").notNull().unique(),
+  displayName: text("display_name").notNull(),
+  avatarUrl: text("avatar_url"),
+  bio: text("bio"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ── Catalog (canonical products + versioned analysis) ────────────────────────────────────────
+export const products = pgTable(
+  "products",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    // THE dedup invariant: barcode when known, else normalised brand+name+size hash.
+    // Ingestion upserts on this key so everyone converges on one row per real-world product.
+    canonicalKey: text("canonical_key").notNull().unique(),
+    slug: text("slug").notNull().unique(), // /p/[slug]
+    name: text("name").notNull(),
+    brand: text("brand"),
+    retailer: text("retailer"),
+    barcode: text("barcode"),
+    imageUrl: text("image_url"),
+    source: text("source").$type<ProductSource>().notNull().default("user_scan"),
+    createdBy: uuid("created_by").references(() => profiles.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("products_barcode_idx").on(t.barcode)],
+);
+
+export const ingredientProfiles = pgTable(
+  "ingredient_profiles",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    version: integer("version").notNull(),
+    // Exactly one active version per product; old versions are superseded, never deleted.
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("ingredient_profiles_product_version_uq").on(t.productId, t.version),
+    index("ingredient_profiles_product_idx").on(t.productId),
+  ],
+);
+
+export const ingredientProfileItems = pgTable(
+  "ingredient_profile_items",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    profileId: uuid("profile_id")
+      .notNull()
+      .references(() => ingredientProfiles.id, { onDelete: "cascade" }),
+    rank: integer("rank").notNull(), // label order — absolute, never re-sorted
+    name: text("name").notNull(),
+    percent: text("percent"), // as printed ("10%")
+    role: text("role"), // Order F1 functional label; null for pre-F1/seeded data
+    tag: tagEnum("tag"),
+    whyItsHere: text("why_its_here"), // product-SPECIFIC (general what_it_is lives on ingredients)
+    percentageNote: text("percentage_note"),
+  },
+  (t) => [
+    uniqueIndex("ingredient_profile_items_profile_rank_uq").on(t.profileId, t.rank),
+    index("ingredient_profile_items_profile_idx").on(t.profileId),
+  ],
+);
+
+// The canonical ingredient dictionary + product-INDEPENDENT AI cache (brief §4.1):
+// what_it_is is generated once per ingredient and reused across every product containing it.
+export const ingredients = pgTable("ingredients", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  canonicalName: text("canonical_name").notNull().unique(),
+  aliases: text("aliases").array().notNull().default([]),
+  tag: tagEnum("tag"),
+  whatItIs: text("what_it_is"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const nutrition = pgTable("nutrition", {
+  productId: uuid("product_id")
+    .primaryKey()
+    .references(() => products.id, { onDelete: "cascade" }),
+  servingSize: text("serving_size"),
+  per: perEnum("per").notNull().default("100g"),
+  nutrients: jsonb("nutrients").$type<Nutrient[]>().notNull().default([]),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ── Lists (the primary object) ────────────────────────────────────────────────────────────────
+export const lists = pgTable(
+  "lists",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ownerId: uuid("owner_id")
+      .notNull()
+      .references(() => profiles.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    slug: text("slug").notNull().unique(), // /list/[slug]
+    description: text("description"),
+    isPublic: boolean("is_public").notNull().default(false),
+    coverUrl: text("cover_url"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("lists_owner_idx").on(t.ownerId)],
+);
+
+export const listItems = pgTable(
+  "list_items",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    listId: uuid("list_id")
+      .notNull()
+      .references(() => lists.id, { onDelete: "cascade" }),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    position: integer("position").notNull(),
+    note: text("note"), // curator's note ("great for lunchboxes")
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("list_items_list_product_uq").on(t.listId, t.productId),
+    index("list_items_list_position_idx").on(t.listId, t.position),
+    index("list_items_product_idx").on(t.productId),
+  ],
+);
+
+// ── Social graph & engagement ────────────────────────────────────────────────────────────────
+export const follows = pgTable(
+  "follows",
+  {
+    followerId: uuid("follower_id")
+      .notNull()
+      .references(() => profiles.id, { onDelete: "cascade" }),
+    followingId: uuid("following_id")
+      .notNull()
+      .references(() => profiles.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.followerId, t.followingId] })],
+);
+
+export const saves = pgTable(
+  "saves",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => profiles.id, { onDelete: "cascade" }),
+    listId: uuid("list_id")
+      .notNull()
+      .references(() => lists.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.listId] })],
+);
+
+export const votes = pgTable(
+  "votes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => profiles.id, { onDelete: "cascade" }),
+    targetType: text("target_type").$type<VoteTargetType>().notNull(),
+    targetId: uuid("target_id").notNull(),
+    value: integer("value").notNull().default(1),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("votes_user_target_uq").on(t.userId, t.targetType, t.targetId)],
+);
+
+export const comments = pgTable(
+  "comments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => profiles.id, { onDelete: "cascade" }),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    parentId: uuid("parent_id").references((): AnyPgColumn => comments.id, {
+      onDelete: "cascade",
+    }),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("comments_product_idx").on(t.productId)],
+);
+
+// The event log: powers the home feed (G6) and the graduated "on Baloo right now" board.
+export const activity = pgTable(
+  "activity",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    actorId: uuid("actor_id")
+      .notNull()
+      .references(() => profiles.id, { onDelete: "cascade" }),
+    verb: text("verb").$type<ActivityVerb>().notNull(),
+    objectType: text("object_type").notNull(),
+    objectId: uuid("object_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("activity_created_idx").on(t.createdAt),
+    index("activity_actor_idx").on(t.actorId),
+  ],
+);
+
+// ── Trust & safety ────────────────────────────────────────────────────────────────────────────
+export const reports = pgTable("reports", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  reporterId: uuid("reporter_id")
+    .notNull()
+    .references(() => profiles.id, { onDelete: "cascade" }),
+  targetType: text("target_type").$type<ReportTargetType>().notNull(),
+  targetId: uuid("target_id").notNull(),
+  reason: text("reason").notNull(),
+  status: text("status").$type<ReportStatus>().notNull().default("open"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Row types for consumers (G2–G9 build against these, never raw SQL).
+export type Profile = typeof profiles.$inferSelect;
+export type Product = typeof products.$inferSelect;
+export type NewProduct = typeof products.$inferInsert;
+export type IngredientProfile = typeof ingredientProfiles.$inferSelect;
+export type IngredientProfileItem = typeof ingredientProfileItems.$inferSelect;
+export type Ingredient = typeof ingredients.$inferSelect;
+export type NutritionRow = typeof nutrition.$inferSelect;
+export type List = typeof lists.$inferSelect;
+export type ListItem = typeof listItems.$inferSelect;
