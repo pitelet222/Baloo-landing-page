@@ -7,6 +7,7 @@ import { cacheSet } from "@/lib/cache";
 import { MODEL } from "@/lib/config";
 import { mockAnalyzeStream } from "@/lib/mock";
 import { recordScan } from "@/lib/stats";
+import { ingestAnalysis } from "@/lib/ingest";
 import { geolocation } from "@vercel/functions";
 
 export const maxDuration = 60;
@@ -55,6 +56,15 @@ export async function POST(req: Request) {
           product_summary: object.product_summary,
         });
       }
+      // Phase 3: persist a canonical, deduplicated product (silent no-op without a DB).
+      await ingestAnalysis({
+        product_name,
+        retailer,
+        url,
+        ingredients: object.ingredients,
+        product_summary: object.product_summary,
+        nutrition,
+      });
       await recordScan({ product_name, retailer, country });
     } catch (err) {
       console.error("analyze persist error:", err);

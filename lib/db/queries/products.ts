@@ -2,15 +2,18 @@
 // null-guard (`const dbi = db(); if (!dbi) ...`), keeping "database optional" visible at the
 // call site. G3's ingestion and product page consume these.
 
-import { and, eq, or } from "drizzle-orm";
+import { and, eq, inArray, or } from "drizzle-orm";
 import type { Db } from "../index";
+import { ingredientKey } from "../../canonical";
 import {
+  ingredients,
   ingredientProfileItems,
   ingredientProfiles,
   nutrition,
   products,
   type IngredientProfileItem,
   type NewProduct,
+  type NutritionRow,
   type Product,
 } from "../schema";
 
@@ -71,4 +74,69 @@ export async function getActiveProfileWithItems(
 export async function getNutritionForProduct(dbi: Db, productId: string) {
   const [row] = await dbi.select().from(nutrition).where(eq(nutrition.productId, productId)).limit(1);
   return row ?? null;
+}
+
+export type ProductPageItem = {
+  name: string;
+  tag: "Natural" | "Processed" | null;
+  role: string | null;
+  percent: string | null;
+  whyItsHere: string | null;
+  percentageNote: string | null;
+  whatItIs: string | null; // joined from the shared ingredients cache
+};
+
+export type ProductPageData = {
+  product: Product;
+  version: number;
+  summary: string | null;
+  items: ProductPageItem[];
+  nutrition: NutritionRow | null;
+};
+
+// One assembled read for /p/[slug]: product + active profile (version, summary) + items with the
+// product-independent what_it_is merged in from the shared `ingredients` cache + nutrition.
+// The item→ingredients match is done in code (via ingredientKey) rather than SQL, so the same
+// normalisation used on write is used on read.
+export async function getProductForPage(dbi: Db, slug: string): Promise<ProductPageData | null> {
+  const product = await getProductBySlugOrKey(dbi, slug);
+  if (!product) return null;
+
+  const nutritionRow = await getNutritionForProduct(dbi, product.id);
+
+  const [profile] = await dbi
+    .select()
+    .from(ingredientProfiles)
+    .where(and(eq(ingredientProfiles.productId, product.id), eq(ingredientProfiles.isActive, true)))
+    .limit(1);
+  if (!profile) {
+    return { product, version: 0, summary: null, items: [], nutrition: nutritionRow };
+  }
+
+  const itemRows = await dbi
+    .select()
+    .from(ingredientProfileItems)
+    .where(eq(ingredientProfileItems.profileId, profile.id))
+    .orderBy(ingredientProfileItems.rank);
+
+  const keys = [...new Set(itemRows.map((r) => ingredientKey(r.name)))];
+  const defs = keys.length
+    ? await dbi
+        .select({ canonicalName: ingredients.canonicalName, whatItIs: ingredients.whatItIs })
+        .from(ingredients)
+        .where(inArray(ingredients.canonicalName, keys))
+    : [];
+  const whatMap = new Map(defs.map((d) => [d.canonicalName, d.whatItIs]));
+
+  const items: ProductPageItem[] = itemRows.map((r) => ({
+    name: r.name,
+    tag: r.tag,
+    role: r.role,
+    percent: r.percent,
+    whyItsHere: r.whyItsHere,
+    percentageNote: r.percentageNote,
+    whatItIs: whatMap.get(ingredientKey(r.name)) ?? null,
+  }));
+
+  return { product, version: profile.version, summary: profile.summary, items, nutrition: nutritionRow };
 }

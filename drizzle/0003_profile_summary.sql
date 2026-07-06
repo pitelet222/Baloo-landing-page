@@ -1,0 +1,1 @@
+ALTER TABLE "ingredient_profiles" ADD COLUMN "summary" text;

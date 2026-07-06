@@ -86,6 +86,8 @@ export const ingredientProfiles = pgTable(
     version: integer("version").notNull(),
     // Exactly one active version per product; old versions are superseded, never deleted.
     isActive: boolean("is_active").notNull().default(true),
+    // The F1 product_summary — one neutral sentence about the formulation, versioned with it.
+    summary: text("summary"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
