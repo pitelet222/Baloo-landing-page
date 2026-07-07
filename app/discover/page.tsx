@@ -23,15 +23,21 @@ export default async function DiscoverPage() {
 
   return (
     <div className="relative min-h-screen">
-      <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5 pb-16">
+      {/* 1140px: the one documented extension of max-w-tool — a reading column can't hold a
+          card grid (D-G5 handoff §0). */}
+      <main className="mx-auto flex min-h-screen w-full max-w-[1140px] flex-col px-5 pb-16">
         <SiteHeader />
 
-        <section className="mt-10 animate-fade-in">
-          <h1 className="font-display text-2xl text-ink">Discover</h1>
-          <p className="mt-1.5 text-sm text-muted">
-            Lists and products from the Baloo community.
+        <section className="mt-12 max-w-[680px] animate-fade-in">
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-natural">Discover</p>
+          <h1 className="mt-2 font-display text-4xl leading-[1.1] text-ink">
+            Lists worth trusting.
+          </h1>
+          <p className="mt-3 text-[15px] leading-relaxed text-muted">
+            What the Baloo community is buying, keeping, and explaining — every product on every
+            list broken down ingredient by ingredient.
           </p>
-          <div className="mt-5">
+          <div className="mt-6">
             {/* useSearchParams requires a Suspense boundary. */}
             <Suspense fallback={null}>
               <SearchBox />
@@ -39,16 +45,15 @@ export default async function DiscoverPage() {
           </div>
         </section>
 
-        <section className="mt-10">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-ink">
-            Recent lists
-          </h2>
+        <section className="mt-12">
+          <h2 className="font-display text-[23px] text-ink">Recently added</h2>
           {lists.length === 0 ? (
             <p className="mt-3 text-sm text-muted">
-              Nothing here yet — make the first public list and it&apos;ll show up for everyone.
+              No public lists yet. Paste a product link on the home tool to analyse a product,
+              then save it to your first list.
             </p>
           ) : (
-            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {lists.map((l) => (
                 <ListCard key={l.id} list={l} handle={l.ownerHandle} />
               ))}
@@ -56,29 +61,33 @@ export default async function DiscoverPage() {
           )}
         </section>
 
-        <section className="mt-10">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-ink">
-            New on Baloo
-          </h2>
+        <section className="mt-12">
+          <h2 className="font-display text-[23px] text-ink">Recently analysed</h2>
           {products.length === 0 ? (
             <p className="mt-3 text-sm text-muted">
               No products yet — analyse one on the homepage and it joins the catalog.
             </p>
           ) : (
-            <ul className="mt-3 overflow-hidden rounded-2xl border border-line bg-paper shadow-card [&>li+li]:border-t [&>li+li]:border-line">
+            <ul className="mt-4 max-w-[760px] overflow-hidden rounded-2xl border border-line bg-paper shadow-card [&>li+li]:border-t [&>li+li]:border-line">
               {products.map((p) => (
                 <li key={p.id}>
                   <Link
                     href={`/p/${p.slug}`}
-                    className="flex items-center justify-between gap-3 px-4 py-3 transition hover:bg-canvas sm:px-5"
+                    className="flex items-center gap-3 px-4 py-3 transition hover:bg-canvas sm:px-5"
                   >
-                    <span className="min-w-0">
-                      <span className="block truncate font-display text-base leading-tight text-ink">
+                    <span
+                      aria-hidden
+                      className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-lg bg-canvas font-display text-lg text-ink/30"
+                    >
+                      {(p.brand ?? p.name)[0]?.toUpperCase()}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-display text-[17px] leading-tight text-ink">
                         {p.name}
                       </span>
-                      {p.brand && (
-                        <span className="text-xs uppercase tracking-[0.08em] text-muted">
-                          {p.brand}
+                      {(p.brand || p.retailer) && (
+                        <span className="text-xs text-muted">
+                          {[p.brand, p.retailer].filter(Boolean).join(" · ")}
                         </span>
                       )}
                     </span>
