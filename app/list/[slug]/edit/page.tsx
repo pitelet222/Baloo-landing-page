@@ -1,0 +1,54 @@
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { db } from "@/lib/db";
+import { getListBySlug } from "@/lib/db/queries/lists";
+import { getSessionUser } from "@/lib/auth";
+import { Wordmark } from "@/components/Wordmark";
+import { ListEditor } from "@/components/lists/ListEditor";
+
+// Owner-only list editor (Order G4). Non-owners (and signed-out) get a 404 — no existence leak.
+type Params = { params: Promise<{ slug: string }> };
+
+export default async function EditListPage({ params }: Params) {
+  const { slug } = await params;
+  const dbi = db();
+  const list = dbi ? await getListBySlug(dbi, slug) : null;
+  if (!list) notFound();
+
+  const user = await getSessionUser();
+  if (!user || user.id !== list.ownerId) notFound();
+
+  const initial = {
+    id: list.id,
+    slug: list.slug,
+    title: list.title,
+    description: list.description ?? "",
+    isPublic: list.isPublic,
+    items: list.items.map((i) => ({
+      productId: i.productId,
+      name: i.product.name,
+      brand: i.product.brand,
+      slug: i.product.slug,
+      note: i.note ?? "",
+    })),
+  };
+
+  return (
+    <div className="relative min-h-screen">
+      <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5">
+        <header className="flex items-center justify-between pt-8 sm:pt-10">
+          <Link href="/" aria-label="Baloo home">
+            <Wordmark className="text-xl" />
+          </Link>
+          <Link
+            href={`/list/${list.slug}`}
+            className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink transition hover:border-ink/20"
+          >
+            Done
+          </Link>
+        </header>
+        <ListEditor initial={initial} />
+      </main>
+    </div>
+  );
+}

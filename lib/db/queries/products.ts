@@ -2,7 +2,7 @@
 // null-guard (`const dbi = db(); if (!dbi) ...`), keeping "database optional" visible at the
 // call site. G3's ingestion and product page consume these.
 
-import { and, eq, inArray, or } from "drizzle-orm";
+import { and, eq, ilike, inArray, or } from "drizzle-orm";
 import type { Db } from "../index";
 import { ingredientKey } from "../../canonical";
 import {
@@ -69,6 +69,18 @@ export async function getActiveProfileWithItems(
     .orderBy(ingredientProfileItems.rank);
 
   return { profileId: profile.id, version: profile.version, items };
+}
+
+// Product picker search (Order G4) — powers the editor's "Add via search". Name match, newest
+// first. (G5 upgrades this to full-text over brand/name + lists.)
+export async function searchProducts(dbi: Db, q: string, limit = 10): Promise<Product[]> {
+  const term = q.trim();
+  if (term.length < 2) return [];
+  return dbi
+    .select()
+    .from(products)
+    .where(ilike(products.name, `%${term}%`))
+    .limit(limit);
 }
 
 export async function getNutritionForProduct(dbi: Db, productId: string) {

@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getProductForPage } from "@/lib/db/queries/products";
 import { ResultsView } from "@/components/ResultsView";
 import { Wordmark } from "@/components/Wordmark";
+import { AddToList } from "@/components/lists/AddToList";
 import type { Ingredient, Nutrition } from "@/lib/schema";
 
 // The canonical product page (Order G3): a permanent, shareable, SSR'd page per product, read
@@ -53,10 +54,11 @@ export default async function ProductPage({ params }: Params) {
   return (
     <div className="relative min-h-screen">
       <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5">
-        <header className="flex justify-center pt-8 sm:pt-10">
+        <header className="flex items-center justify-between pt-8 sm:pt-10">
           <Link href="/" aria-label="Baloo home">
             <Wordmark className="text-xl" />
           </Link>
+          <AddToList productId={data.product.id} />
         </header>
 
         {data.items.length > 0 ? (

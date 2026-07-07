@@ -69,6 +69,19 @@ export async function removeListItem(dbi: Db, listId: string, productId: string)
   await touch(dbi, listId);
 }
 
+export async function setListItemNote(
+  dbi: Db,
+  listId: string,
+  productId: string,
+  note: string | null,
+): Promise<void> {
+  await dbi
+    .update(listItems)
+    .set({ note })
+    .where(and(eq(listItems.listId, listId), eq(listItems.productId, productId)));
+  await touch(dbi, listId);
+}
+
 // Full reorder: caller sends the product ids in the desired order; positions are rewritten
 // 1..n in one transaction so a dropped request can't leave a half-ordered list.
 export async function reorderListItems(
