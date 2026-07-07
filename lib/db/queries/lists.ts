@@ -4,7 +4,7 @@
 
 import { and, asc, desc, eq, max, sql } from "drizzle-orm";
 import type { Db } from "../index";
-import { listItems, lists, products, type List, type ListItem, type Product } from "../schema";
+import { listItems, lists, saves, products, type List, type ListItem, type Product } from "../schema";
 
 export async function createList(
   dbi: Db,
@@ -105,6 +105,44 @@ export async function getListBySlug(dbi: Db, slug: string): Promise<ListWithItem
 
 export async function getListsByOwner(dbi: Db, ownerId: string): Promise<List[]> {
   return dbi.select().from(lists).where(eq(lists.ownerId, ownerId)).orderBy(desc(lists.updatedAt));
+}
+
+export async function getListById(dbi: Db, id: string): Promise<List | null> {
+  const [row] = await dbi.select().from(lists).where(eq(lists.id, id)).limit(1);
+  return row ?? null;
+}
+
+export type ListWithCounts = List & { itemCount: number; saveCount: number };
+
+// leftJoin + groupBy aggregate (one round-trip). count(distinct …) so the two joins don't
+// multiply each other; ::int because count() is a bigint (returned as a string otherwise).
+const itemCountExpr = sql<number>`count(distinct ${listItems.id})::int`;
+const saveCountExpr = sql<number>`count(distinct ${saves.userId})::int`;
+
+export async function getListsByOwnerWithCounts(dbi: Db, ownerId: string): Promise<ListWithCounts[]> {
+  const rows = await dbi
+    .select({ list: lists, itemCount: itemCountExpr, saveCount: saveCountExpr })
+    .from(lists)
+    .leftJoin(listItems, eq(listItems.listId, lists.id))
+    .leftJoin(saves, eq(saves.listId, lists.id))
+    .where(eq(lists.ownerId, ownerId))
+    .groupBy(lists.id)
+    .orderBy(desc(lists.updatedAt));
+  return rows.map((r) => ({ ...r.list, itemCount: r.itemCount, saveCount: r.saveCount }));
+}
+
+// Public discovery feed (a minimal strip in G4; G5 expands it).
+export async function getPublicListsRecent(dbi: Db, limit = 12): Promise<ListWithCounts[]> {
+  const rows = await dbi
+    .select({ list: lists, itemCount: itemCountExpr, saveCount: saveCountExpr })
+    .from(lists)
+    .leftJoin(listItems, eq(listItems.listId, lists.id))
+    .leftJoin(saves, eq(saves.listId, lists.id))
+    .where(eq(lists.isPublic, true))
+    .groupBy(lists.id)
+    .orderBy(desc(lists.updatedAt))
+    .limit(limit);
+  return rows.map((r) => ({ ...r.list, itemCount: r.itemCount, saveCount: r.saveCount }));
 }
 
 async function touch(dbi: Db, listId: string): Promise<void> {
