@@ -2,7 +2,7 @@
 // null-guard (`const dbi = db(); if (!dbi) ...`), keeping "database optional" visible at the
 // call site. G3's ingestion and product page consume these.
 
-import { and, eq, ilike, inArray, or } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, or } from "drizzle-orm";
 import type { Db } from "../index";
 import { ingredientKey } from "../../canonical";
 import {
@@ -69,6 +69,11 @@ export async function getActiveProfileWithItems(
     .orderBy(ingredientProfileItems.rank);
 
   return { profileId: profile.id, version: profile.version, items };
+}
+
+// The discover page's "New on Baloo" strip (Order G5).
+export async function getRecentProducts(dbi: Db, limit = 8): Promise<Product[]> {
+  return dbi.select().from(products).orderBy(desc(products.createdAt)).limit(limit);
 }
 
 // Product picker search (Order G4) — powers the editor's "Add via search". Name match, newest

@@ -61,7 +61,7 @@ export function AccountMenu() {
         onClick={() => (user ? setOpen((o) => !o) : setModal("signin"))}
         aria-haspopup={user ? "menu" : undefined}
         aria-expanded={user ? open : undefined}
-        className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink transition hover:border-ink/20"
+        className="max-w-[130px] truncate rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink transition hover:border-ink/20"
       >
         {label}
       </button>

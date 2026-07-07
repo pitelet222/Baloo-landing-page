@@ -3,7 +3,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { getListBySlug } from "@/lib/db/queries/lists";
 import { getSessionUser } from "@/lib/auth";
-import { Wordmark } from "@/components/Wordmark";
+import { SiteHeader } from "@/components/SiteHeader";
 import { ListEditor } from "@/components/lists/ListEditor";
 
 // Owner-only list editor (Order G4). Non-owners (and signed-out) get a 404 — no existence leak.
@@ -36,17 +36,16 @@ export default async function EditListPage({ params }: Params) {
   return (
     <div className="relative min-h-screen">
       <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5">
-        <header className="flex items-center justify-between pt-8 sm:pt-10">
-          <Link href="/" aria-label="Baloo home">
-            <Wordmark className="text-xl" />
-          </Link>
-          <Link
-            href={`/list/${list.slug}`}
-            className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink transition hover:border-ink/20"
-          >
-            Done
-          </Link>
-        </header>
+        <SiteHeader
+          action={
+            <Link
+              href={`/list/${list.slug}`}
+              className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink transition hover:border-ink/20"
+            >
+              Done
+            </Link>
+          }
+        />
         <ListEditor initial={initial} />
       </main>
     </div>

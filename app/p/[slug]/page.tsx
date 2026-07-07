@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { getProductForPage } from "@/lib/db/queries/products";
 import { ResultsView } from "@/components/ResultsView";
-import { Wordmark } from "@/components/Wordmark";
+import { SiteHeader } from "@/components/SiteHeader";
 import { AddToList } from "@/components/lists/AddToList";
 import type { Ingredient, Nutrition } from "@/lib/schema";
 
@@ -54,12 +54,7 @@ export default async function ProductPage({ params }: Params) {
   return (
     <div className="relative min-h-screen">
       <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5">
-        <header className="flex items-center justify-between pt-8 sm:pt-10">
-          <Link href="/" aria-label="Baloo home">
-            <Wordmark className="text-xl" />
-          </Link>
-          <AddToList productId={data.product.id} />
-        </header>
+        <SiteHeader action={<AddToList productId={data.product.id} />} />
 
         {data.items.length > 0 ? (
           // loading={false} → ResultsView renders the finished (non-streaming) product view.

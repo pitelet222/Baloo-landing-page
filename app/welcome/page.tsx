@@ -6,7 +6,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/useAuth";
-import { Wordmark } from "@/components/Wordmark";
+import { SiteHeader } from "@/components/SiteHeader";
 
 const ERRORS: Record<string, string> = {
   invalid_handle: "Handles are 3–20 characters: lowercase letters, numbers and hyphens.",
@@ -54,9 +54,7 @@ export default function Welcome() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5">
-      <header className="flex justify-center pt-8 sm:pt-10">
-        <Wordmark className="text-xl" />
-      </header>
+      <SiteHeader variant="center" showNav={false} />
 
       <section className="mx-auto mt-16 w-full max-w-sm animate-fade-in">
         {loading ? (

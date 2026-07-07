@@ -5,7 +5,8 @@ import { db } from "@/lib/db";
 import { getListBySlug } from "@/lib/db/queries/lists";
 import { getProfileById } from "@/lib/db/queries/profiles";
 import { getSessionUser } from "@/lib/auth";
-import { Wordmark } from "@/components/Wordmark";
+import { SiteHeader } from "@/components/SiteHeader";
+import { DeferredChip } from "@/components/DeferredChip";
 import { ListCover } from "@/components/lists/ListCover";
 import { ShareButton } from "@/components/lists/ShareButton";
 
@@ -52,19 +53,18 @@ export default async function ListPage({ params }: Params) {
   return (
     <div className="relative min-h-screen">
       <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5">
-        <header className="flex items-center justify-between pt-8 sm:pt-10">
-          <Link href="/" aria-label="Baloo home">
-            <Wordmark className="text-xl" />
-          </Link>
-          {isOwner && (
-            <Link
-              href={`/list/${list.slug}/edit`}
-              className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink transition hover:border-ink/20"
-            >
-              Edit
-            </Link>
-          )}
-        </header>
+        <SiteHeader
+          action={
+            isOwner ? (
+              <Link
+                href={`/list/${list.slug}/edit`}
+                className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink transition hover:border-ink/20"
+              >
+                Edit
+              </Link>
+            ) : undefined
+          }
+        />
 
         <section className="mt-8 animate-fade-in">
           <ListCover
@@ -164,21 +164,5 @@ export default async function ListPage({ params }: Params) {
         <div className="mt-auto" />
       </main>
     </div>
-  );
-}
-
-// Present-but-deferred controls (Follow → G6, Save → G7): shown per the design with a quiet
-// "soon" treatment so the page reads finished without over-promising.
-function DeferredChip({ label }: { label: string }) {
-  return (
-    <span
-      className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-muted/70"
-      title="Coming soon"
-    >
-      {label}
-      <span className="rounded-full bg-line px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-muted">
-        Soon
-      </span>
-    </span>
   );
 }

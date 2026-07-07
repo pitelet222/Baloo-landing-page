@@ -10,8 +10,7 @@ import { EmailCapture } from "@/components/EmailCapture";
 import { RetailerRow } from "@/components/RetailerRow";
 import { HowItWorks } from "@/components/HowItWorks";
 import { Board } from "@/components/Board";
-import { AccountMenu } from "@/components/auth/AccountMenu";
-import { Wordmark } from "@/components/Wordmark";
+import { SiteHeader } from "@/components/SiteHeader";
 import { Footer } from "@/components/Footer";
 
 const FRIENDLY_ERROR =
@@ -121,13 +120,7 @@ export default function Home() {
       />
 
       <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5">
-        <header className="relative flex items-center justify-center pt-8 sm:pt-10">
-          <Wordmark className="text-xl" />
-          {/* Renders nothing until Supabase is configured (Order G2). */}
-          <div className="absolute right-0">
-            <AccountMenu />
-          </div>
-        </header>
+        <SiteHeader variant="center" />
 
         <section className={`text-center ${idle ? "pt-14 sm:pt-20" : "pt-8"}`}>
           {idle && (

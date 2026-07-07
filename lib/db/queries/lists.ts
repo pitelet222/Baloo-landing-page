@@ -4,7 +4,16 @@
 
 import { and, asc, desc, eq, max, sql } from "drizzle-orm";
 import type { Db } from "../index";
-import { listItems, lists, saves, products, type List, type ListItem, type Product } from "../schema";
+import {
+  listItems,
+  lists,
+  profiles,
+  saves,
+  products,
+  type List,
+  type ListItem,
+  type Product,
+} from "../schema";
 
 export async function createList(
   dbi: Db,
@@ -144,18 +153,48 @@ export async function getListsByOwnerWithCounts(dbi: Db, ownerId: string): Promi
   return rows.map((r) => ({ ...r.list, itemCount: r.itemCount, saveCount: r.saveCount }));
 }
 
-// Public discovery feed (a minimal strip in G4; G5 expands it).
-export async function getPublicListsRecent(dbi: Db, limit = 12): Promise<ListWithCounts[]> {
+// The profile page's read: PUBLIC lists only — private lists never appear on a profile, the
+// owner's own included (owners manage everything via /lists).
+export async function getPublicListsByOwnerWithCounts(
+  dbi: Db,
+  ownerId: string,
+): Promise<ListWithCounts[]> {
   const rows = await dbi
     .select({ list: lists, itemCount: itemCountExpr, saveCount: saveCountExpr })
     .from(lists)
     .leftJoin(listItems, eq(listItems.listId, lists.id))
     .leftJoin(saves, eq(saves.listId, lists.id))
-    .where(eq(lists.isPublic, true))
+    .where(and(eq(lists.ownerId, ownerId), eq(lists.isPublic, true)))
     .groupBy(lists.id)
+    .orderBy(desc(lists.updatedAt));
+  return rows.map((r) => ({ ...r.list, itemCount: r.itemCount, saveCount: r.saveCount }));
+}
+
+export type ListWithCountsAndOwner = ListWithCounts & { ownerHandle: string | null };
+
+// Public discovery feed (Order G5 expands the G4 stub with the owner handle for cards).
+export async function getPublicListsRecent(dbi: Db, limit = 12): Promise<ListWithCountsAndOwner[]> {
+  const rows = await dbi
+    .select({
+      list: lists,
+      itemCount: itemCountExpr,
+      saveCount: saveCountExpr,
+      ownerHandle: profiles.handle,
+    })
+    .from(lists)
+    .leftJoin(listItems, eq(listItems.listId, lists.id))
+    .leftJoin(saves, eq(saves.listId, lists.id))
+    .innerJoin(profiles, eq(profiles.id, lists.ownerId))
+    .where(eq(lists.isPublic, true))
+    .groupBy(lists.id, profiles.handle)
     .orderBy(desc(lists.updatedAt))
     .limit(limit);
-  return rows.map((r) => ({ ...r.list, itemCount: r.itemCount, saveCount: r.saveCount }));
+  return rows.map((r) => ({
+    ...r.list,
+    itemCount: r.itemCount,
+    saveCount: r.saveCount,
+    ownerHandle: r.ownerHandle,
+  }));
 }
 
 async function touch(dbi: Db, listId: string): Promise<void> {

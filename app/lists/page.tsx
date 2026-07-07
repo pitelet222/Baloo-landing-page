@@ -3,8 +3,7 @@ import Link from "next/link";
 import { getCurrentProfile } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getListsByOwnerWithCounts } from "@/lib/db/queries/lists";
-import { Wordmark } from "@/components/Wordmark";
-import { AccountMenu } from "@/components/auth/AccountMenu";
+import { SiteHeader } from "@/components/SiteHeader";
 import { ListCard } from "@/components/lists/ListCard";
 
 export const metadata: Metadata = { title: "Your lists — Baloo" };
@@ -19,14 +18,7 @@ export default async function MyListsPage() {
   return (
     <div className="relative min-h-screen">
       <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5">
-        <header className="relative flex items-center justify-center pt-8 sm:pt-10">
-          <Link href="/" aria-label="Baloo home">
-            <Wordmark className="text-xl" />
-          </Link>
-          <div className="absolute right-0">
-            <AccountMenu />
-          </div>
-        </header>
+        <SiteHeader />
 
         <section className="mt-10 animate-fade-in">
           <div className="flex items-center justify-between gap-3">
