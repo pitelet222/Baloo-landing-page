@@ -125,3 +125,46 @@ Rules:
 - Never advice: nothing about limiting, avoiding, choosing, or moderating.
 - Plain text only, no markdown.`;
 }
+
+// --- "Explain this" (Order G8b): the in-thread AI answer. Grounded in the label-derived
+// ingredient facts Baloo already stored; the model only explains what's there, never invents. ---
+export function explainPrompt(input: {
+  product_name: string;
+  comment: string | null; // null = product-scope ("Explain the ingredients")
+  ingredients: { name: string; tag: string | null; what_it_is: string; why_its_here: string }[];
+}): string {
+  const label = input.ingredients
+    .map(
+      (i) =>
+        `- ${i.name}${i.tag ? ` (${i.tag})` : ""}: ${i.what_it_is || "—"}${
+          i.why_its_here ? ` | in this product: ${i.why_its_here}` : ""
+        }`,
+    )
+    .join("\n");
+
+  const focus = input.comment
+    ? `A community member wrote this comment on the product's discussion:\n"${input.comment}"\n\nExplain, factually, whatever ingredient or claim the comment touches — the most relevant thing on the label. If the comment is vague, explain the ingredient most likely being referred to.`
+    : `No specific question was asked. Give a brief factual overview of what stands out on this product's ingredient label.`;
+
+  return `You are a knowledgeable, calm nutritionist.
+Education before persuasion. Never alarmist.
+Never tell the user what to buy or avoid.
+Explain what ingredients are and why they are used.
+Context over judgment.
+
+Product: ${input.product_name}
+Ingredient facts already established from the label (your ONLY source of truth):
+${label}
+
+${focus}
+
+Return two beats:
+- what_it_is: 2-3 sentences on the ingredient/topic in general — true of it anywhere, not just here.
+- in_this_product: 2-3 sentences on the concrete role it plays in THIS product, tied to the label.
+
+Rules:
+- Ground everything in the ingredient facts above. Never invent an ingredient or a number.
+- This is a FACTUAL explanation, not an opinion and not a health claim. Do not agree or disagree
+  with the comment, and never say an ingredient is good, bad, safe, unsafe, or something to avoid.
+- Calm and neutral, in the voice above. Plain text, no markdown.`;
+}

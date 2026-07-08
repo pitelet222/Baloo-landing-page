@@ -9,8 +9,10 @@ import Link from "next/link";
 import { useAuth } from "@/components/auth/useAuth";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { UpvotePill } from "@/components/engagement/UpvotePill";
+import { Wordmark } from "@/components/Wordmark";
 import { monogram } from "@/lib/cover";
 import type { ThreadComment, ThreadSort } from "@/lib/db/queries/comments";
+import type { Explanation } from "@/lib/schema";
 
 function countAll(nodes: ThreadComment[]): number {
   return nodes.reduce((n, c) => n + 1 + c.replies.length, 0);
@@ -22,6 +24,53 @@ function relTime(iso: string): string {
   if (s < 3600) return `${Math.round(s / 60)}m`;
   if (s < 86400) return `${Math.round(s / 3600)}h`;
   return `${Math.round(s / 86400)}d`;
+}
+
+function SparkGlyph({ className }: { className?: string }) {
+  // Lucide-weight spark — the brand's rare-icon exception for the AI affordance (handoff §5).
+  return (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden className={className}>
+      <path d="M8 2.5l1.3 3.2L12.5 7l-3.2 1.3L8 11.5 6.7 8.3 3.5 7l3.2-1.3z" />
+    </svg>
+  );
+}
+
+// "Explain this" fetch state (Order G8b). Signed-in only; re-tap collapses; result is cached
+// server-side so a second open is instant.
+type ExplainTarget = { commentId: string } | { productId: string };
+function useExplain(target: ExplainTarget, signedIn: boolean, onNeedAuth: () => void) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [data, setData] = useState<Explanation | null>(null);
+
+  async function load() {
+    setLoading(true);
+    setError(false);
+    try {
+      const res = await fetch("/api/explain", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(target),
+      });
+      if (!res.ok) throw new Error("explain failed");
+      const j = await res.json();
+      setData(j.explanation);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function toggle() {
+    if (open) return setOpen(false);
+    if (!signedIn) return onNeedAuth();
+    setOpen(true);
+    if (!data) load();
+  }
+
+  return { open, loading, error, data, toggle, load };
 }
 
 export function CommentThread({
@@ -104,6 +153,11 @@ export function CommentThread({
         <div className="mt-6 rounded-xl border border-line bg-paper p-6 text-center">
           <p className="text-sm text-ink">No comments yet.</p>
           <p className="mt-1 text-sm text-muted">Be the first to share what you think.</p>
+          <ProductExplain
+            productId={productId}
+            signedIn={!!user}
+            onNeedAuth={() => setAuthOpen(true)}
+          />
         </div>
       ) : (
         <ul className="mt-6">
@@ -252,6 +306,7 @@ function CommentRow({
 }) {
   const { available, profile } = useAuth();
   const [replying, setReplying] = useState(false);
+  const explain = useExplain({ commentId: comment.id }, signedIn, onNeedAuth);
 
   const avatarSize = isReply ? "h-7 w-7 text-[11px]" : "h-[34px] w-[34px] text-xs";
 
@@ -286,15 +341,30 @@ function CommentRow({
               size={isReply ? "xs" : "sm"}
             />
             {!isReply && (
-              <button
-                type="button"
-                onClick={() => (signedIn ? setReplying((v) => !v) : onNeedAuth())}
-                className="text-[13px] font-medium text-muted transition hover:text-ink"
-              >
-                Reply
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => (signedIn ? setReplying((v) => !v) : onNeedAuth())}
+                  className="text-[13px] font-medium text-muted transition hover:text-ink"
+                >
+                  Reply
+                </button>
+                <button
+                  type="button"
+                  onClick={explain.toggle}
+                  aria-pressed={explain.open}
+                  className="flex items-center gap-1 text-[13px] font-medium text-muted transition hover:text-ink"
+                >
+                  <SparkGlyph className="h-3.5 w-3.5" />
+                  Explain this
+                </button>
+              </>
             )}
           </div>
+
+          {!isReply && explain.open && (
+            <ExplainCard loading={explain.loading} error={explain.error} data={explain.data} onRetry={explain.load} />
+          )}
 
           {replying && (
             <Composer
@@ -335,6 +405,98 @@ function CommentRow({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── The one card in a card-less thread: Baloo AI = neutral reference (handoff §5) ─────────────
+
+function ExplainCard({
+  loading,
+  error,
+  data,
+  onRetry,
+}: {
+  loading: boolean;
+  error: boolean;
+  data: Explanation | null;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="mt-3 animate-rise overflow-hidden rounded-xl border border-line bg-paper">
+      {/* Header strip: wordmark, NOT an avatar — the strongest signal the speaker isn't a person. */}
+      <div className="flex items-center gap-2 border-b border-line bg-canvas px-4 py-2.5">
+        <SparkGlyph className="h-4 w-4 text-natural" />
+        <Wordmark className="text-sm" />
+        <span className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted">
+          Explanation
+        </span>
+      </div>
+
+      {loading ? (
+        <p className="flex items-center gap-2 px-4 py-4 text-sm text-muted">
+          <span aria-hidden className="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-natural" />
+          Baloo is reading the label…
+        </p>
+      ) : error ? (
+        <div className="px-4 py-4">
+          <p className="text-sm text-ink">Baloo couldn&apos;t generate an explanation right now.</p>
+          <button type="button" onClick={onRetry} className="mt-2 text-[13px] font-medium text-natural hover:underline">
+            Try again
+          </button>
+        </div>
+      ) : data ? (
+        <div className="px-4 py-4">
+          <p className="text-[15px] leading-relaxed text-ink/80">
+            <span className="font-semibold text-ink">What it is. </span>
+            {data.what_it_is}
+          </p>
+          {data.in_this_product && (
+            <p className="mt-3 text-[15px] leading-relaxed text-ink/80">
+              <span className="font-semibold text-ink">In this product. </span>
+              {data.in_this_product}
+            </p>
+          )}
+          <p className="mt-4 border-t border-line pt-3 text-xs text-muted">
+            Generated by Baloo from the product label. A factual explanation, not a health claim or
+            an opinion.
+          </p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+// Product-scope Explain (empty-state variant, handoff §5): the AI is reachable before any
+// discussion exists.
+function ProductExplain({
+  productId,
+  signedIn,
+  onNeedAuth,
+}: {
+  productId: string;
+  signedIn: boolean;
+  onNeedAuth: () => void;
+}) {
+  const explain = useExplain({ productId }, signedIn, onNeedAuth);
+  return (
+    <div className="mt-4">
+      <div className="flex justify-center">
+        <button
+          type="button"
+          onClick={explain.toggle}
+          aria-pressed={explain.open}
+          className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-4 py-1.5 text-[13px] font-medium text-ink transition hover:bg-canvas"
+        >
+          <SparkGlyph className="h-3.5 w-3.5 text-natural" />
+          Explain the ingredients
+        </button>
+      </div>
+      {explain.open && (
+        <div className="mx-auto mt-3 max-w-md text-left">
+          <ExplainCard loading={explain.loading} error={explain.error} data={explain.data} onRetry={explain.load} />
+        </div>
+      )}
     </div>
   );
 }

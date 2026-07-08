@@ -50,6 +50,11 @@ export async function getProductBySlugOrKey(dbi: Db, slugOrKey: string): Promise
   return row ?? null;
 }
 
+export async function getProductById(dbi: Db, id: string): Promise<Product | null> {
+  const [row] = await dbi.select().from(products).where(eq(products.id, id)).limit(1);
+  return row ?? null;
+}
+
 // The product page's main read: the ACTIVE ingredient profile + its items in label order.
 export async function getActiveProfileWithItems(
   dbi: Db,

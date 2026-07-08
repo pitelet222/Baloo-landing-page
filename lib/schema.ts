@@ -36,6 +36,19 @@ export const nutritionSchema = z.object({
 });
 export type Nutrition = z.infer<typeof nutritionSchema>;
 
+// --- "Explain this" (Order G8b): Baloo's in-thread AI answer, in the signature two-beat that
+// ingredient cards use — "What it is." (the ingredient in general) then "In this product." (why
+// it's here / where it sits on the label). Neutral reference, never opinion or a health claim. ---
+export const explanationSchema = z.object({
+  what_it_is: z
+    .string()
+    .describe("2-3 sentences on the ingredient/topic in general: what it is, where it comes from."),
+  in_this_product: z
+    .string()
+    .describe("2-3 sentences on the concrete role it plays in THIS product, tied to the label."),
+});
+export type Explanation = z.infer<typeof explanationSchema>;
+
 // --- Call 1: extraction from page markdown ---
 export const extractionSchema = z.object({
   product_name: z.string().describe("The product's name as shown on the page"),
