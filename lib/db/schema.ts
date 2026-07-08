@@ -52,6 +52,8 @@ export const profiles = pgTable("profiles", {
   displayName: text("display_name").notNull(),
   avatarUrl: text("avatar_url"),
   bio: text("bio"),
+  // Moderation privilege (Order G9). Set via scripts/make-admin.ts; gates /admin + /api/moderation.
+  isAdmin: boolean("is_admin").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -236,6 +238,11 @@ export const comments = pgTable(
       onDelete: "cascade",
     }),
     body: text("body").notNull(),
+    // Soft moderation (Order G9): non-null = removed. hiddenBy distinguishes an author's own
+    // delete from a moderator action. Nothing is hard-deleted — reversible + auditable, and it
+    // keeps the thread tree intact (hidden nodes render as a tombstone so replies aren't orphaned).
+    hiddenAt: timestamp("hidden_at", { withTimezone: true }),
+    hiddenBy: text("hidden_by").$type<"author" | "moderator">(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("comments_product_idx").on(t.productId)],
@@ -286,3 +293,5 @@ export type Ingredient = typeof ingredients.$inferSelect;
 export type NutritionRow = typeof nutrition.$inferSelect;
 export type List = typeof lists.$inferSelect;
 export type ListItem = typeof listItems.$inferSelect;
+export type Comment = typeof comments.$inferSelect;
+export type Report = typeof reports.$inferSelect;

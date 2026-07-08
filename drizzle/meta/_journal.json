@@ -36,6 +36,13 @@
       "when": 1783489577405,
       "tag": "0004_activity_meta",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1783532538582,
+      "tag": "0005_moderation",
+      "breakpoints": true
     }
   ]
 }

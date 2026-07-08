@@ -36,3 +36,19 @@ export async function getCurrentProfile(): Promise<{ user: User; profile: Profil
   const profile = dbi ? await getProfileById(dbi, user.id) : null;
   return { user, profile };
 }
+
+// Moderation gate (Order G9). Admin = profiles.is_admin (set via scripts/make-admin.ts).
+export async function requireAdmin(): Promise<
+  { user: User; profile: Profile } | { error: NextResponse }
+> {
+  const current = await getCurrentProfile();
+  if (!current?.profile?.isAdmin) {
+    return { error: NextResponse.json({ error: "forbidden" }, { status: 403 }) };
+  }
+  return { user: current.user, profile: current.profile };
+}
+
+export async function isCurrentUserAdmin(): Promise<boolean> {
+  const current = await getCurrentProfile();
+  return !!current?.profile?.isAdmin;
+}

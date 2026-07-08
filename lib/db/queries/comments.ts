@@ -14,6 +14,8 @@ export type ThreadComment = {
   author: CommentAuthor;
   votes: number;
   viewerVoted: boolean;
+  hidden: boolean; // moderated or author-deleted → render a tombstone (G9)
+  authorId: string; // lets the client show the owner's Delete affordance
   replies: ThreadComment[]; // one level; always chronological
 };
 
@@ -65,15 +67,23 @@ export async function getThread(
       )
     : new Set<string>();
 
-  const toNode = (r: (typeof rows)[number]): ThreadComment => ({
-    id: r.c.id,
-    body: r.c.body,
-    ts: r.c.createdAt.toISOString(),
-    author: { handle: r.handle, displayName: r.displayName },
-    votes: counts.get(r.c.id) ?? 0,
-    viewerVoted: voted.has(r.c.id),
-    replies: [],
-  });
+  const toNode = (r: (typeof rows)[number]): ThreadComment => {
+    const hidden = !!r.c.hiddenAt;
+    return {
+      id: r.c.id,
+      // Tombstone: hidden content leaks neither its text nor its author.
+      body: hidden ? "" : r.c.body,
+      ts: r.c.createdAt.toISOString(),
+      author: hidden
+        ? { handle: "", displayName: "" }
+        : { handle: r.handle, displayName: r.displayName },
+      votes: hidden ? 0 : (counts.get(r.c.id) ?? 0),
+      viewerVoted: hidden ? false : voted.has(r.c.id),
+      hidden,
+      authorId: r.c.userId,
+      replies: [],
+    };
+  };
 
   const nodes = new Map(rows.map((r) => [r.c.id, toNode(r)]));
   const tops: { node: ThreadComment; ts: number }[] = [];
@@ -121,6 +131,28 @@ export async function addComment(
     })
     .returning({ id: comments.id });
   return { ok: true, id: row.id };
+}
+
+// Soft moderation (Order G9). Reversible; the row stays for audit + thread structure.
+export async function hideComment(dbi: Db, id: string, by: "author" | "moderator"): Promise<void> {
+  await dbi
+    .update(comments)
+    .set({ hiddenAt: new Date(), hiddenBy: by })
+    .where(eq(comments.id, id));
+}
+
+export async function unhideComment(dbi: Db, id: string): Promise<void> {
+  await dbi.update(comments).set({ hiddenAt: null, hiddenBy: null }).where(eq(comments.id, id));
+}
+
+// Author self-delete: soft-hide, ownership enforced. Returns false if not the author's comment.
+export async function deleteOwnComment(dbi: Db, id: string, userId: string): Promise<boolean> {
+  const res = await dbi
+    .update(comments)
+    .set({ hiddenAt: new Date(), hiddenBy: "author" })
+    .where(and(eq(comments.id, id), eq(comments.userId, userId)))
+    .returning({ id: comments.id });
+  return res.length > 0;
 }
 
 // Explain-this (G8b) grounding: product name + the comment being explained.
