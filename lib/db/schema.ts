@@ -252,6 +252,9 @@ export const activity = pgTable(
     verb: text("verb").$type<ActivityVerb>().notNull(),
     objectType: text("object_type").notNull(),
     objectId: uuid("object_id").notNull(),
+    // Sidecar detail (G6): e.g. added_item keeps objectId = the list but records WHICH product
+    // here, so the feed's receipt panel can name it. Nullable — pre-G6 rows render count-only.
+    meta: jsonb("meta").$type<{ productId?: string }>(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [

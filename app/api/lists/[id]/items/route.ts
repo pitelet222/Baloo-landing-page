@@ -47,6 +47,7 @@ export async function POST(req: Request, { params }: Params) {
     verb: "added_item",
     objectType: "list",
     objectId: g.listId,
+    meta: { productId: body.productId }, // lets the feed name the product (G6)
   });
   return NextResponse.json({ item });
 }

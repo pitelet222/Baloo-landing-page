@@ -7,9 +7,10 @@ import {
   getPublicListsByOwnerWithCounts,
 } from "@/lib/db/queries/lists";
 import { getSessionUser } from "@/lib/auth";
+import { getFollowCounts, isFollowing } from "@/lib/db/queries/follows";
 import { coverCss, monogram } from "@/lib/cover";
 import { SiteHeader } from "@/components/SiteHeader";
-import { DeferredChip } from "@/components/DeferredChip";
+import { FollowButton } from "@/components/FollowButton";
 import { ListCard } from "@/components/lists/ListCard";
 import { ShareButton } from "@/components/lists/ShareButton";
 
@@ -51,6 +52,8 @@ export default async function ProfilePage({ params }: Params) {
     : await getPublicListsByOwnerWithCounts(dbi, profile.id);
   const publicCount = lists.filter((l) => l.isPublic).length;
   const joinedYear = profile.createdAt.getFullYear();
+  const counts = await getFollowCounts(dbi, profile.id);
+  const viewerFollows = viewer && !isOwner ? await isFollowing(dbi, viewer.id, profile.id) : false;
 
   return (
     <div className="relative min-h-screen">
@@ -79,7 +82,7 @@ export default async function ProfilePage({ params }: Params) {
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <ShareButton path={`/u/${profile.handle}`} />
-              {!isOwner && <DeferredChip label="Follow" />}
+              <FollowButton profileId={profile.id} initialFollowing={viewerFollows} />
             </div>
           </div>
 
@@ -89,7 +92,9 @@ export default async function ProfilePage({ params }: Params) {
             </p>
           )}
           <p className="mt-3 text-sm tabular-nums text-muted">
-            Joined {joinedYear} · {publicCount} public {publicCount === 1 ? "list" : "lists"}
+            Joined {joinedYear} · {counts.followers}{" "}
+            {counts.followers === 1 ? "follower" : "followers"} · {counts.following} following ·{" "}
+            {publicCount} public {publicCount === 1 ? "list" : "lists"}
           </p>
         </section>
 

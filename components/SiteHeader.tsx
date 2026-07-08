@@ -23,6 +23,9 @@ export function SiteHeader({
       }`}
       aria-label="Site"
     >
+      <Link href="/feed" className="transition hover:text-ink">
+        Following
+      </Link>
       <Link href="/discover" className="transition hover:text-ink">
         Discover
       </Link>
