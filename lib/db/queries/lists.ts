@@ -172,6 +172,43 @@ export async function getPublicListsByOwnerWithCounts(
 
 export type ListWithCountsAndOwner = ListWithCounts & { ownerHandle: string | null };
 
+// "Popular this week" (Order G7 unlocks G5's deferred section): public lists ranked by
+// engagement signal — saves + list-upvotes created in the last 7 days, equal weight, recency
+// tie-break. One query; the weighting is trivially tunable here without touching callers.
+// Returns [] when there's no signal — the section hides rather than faking a ranking.
+export async function getPopularListsThisWeek(
+  dbi: Db,
+  limit = 8,
+): Promise<(ListWithCountsAndOwner & { signal: number })[]> {
+  const weekAgo = sql`now() - interval '7 days'`;
+  const signalExpr = sql<number>`(
+    (select count(*)::int from ${saves} s where s.list_id = ${lists.id} and s.created_at > ${weekAgo})
+    + (select count(*)::int from votes v where v.target_type = 'list' and v.target_id = ${lists.id} and v.created_at > ${weekAgo})
+  )`;
+  const rows = await dbi
+    .select({
+      list: lists,
+      itemCount: sql<number>`(select count(*)::int from ${listItems} li where li.list_id = ${lists.id})`,
+      saveCount: sql<number>`(select count(*)::int from ${saves} s3 where s3.list_id = ${lists.id})`,
+      ownerHandle: profiles.handle,
+      signal: signalExpr,
+    })
+    .from(lists)
+    .innerJoin(profiles, eq(profiles.id, lists.ownerId))
+    .where(eq(lists.isPublic, true))
+    .orderBy(sql`${signalExpr} desc`, desc(lists.updatedAt))
+    .limit(limit);
+  return rows
+    .filter((r) => r.signal > 0)
+    .map((r) => ({
+      ...r.list,
+      itemCount: r.itemCount,
+      saveCount: r.saveCount,
+      ownerHandle: r.ownerHandle,
+      signal: r.signal,
+    }));
+}
+
 // Public discovery feed (Order G5 expands the G4 stub with the owner handle for cards).
 export async function getPublicListsRecent(dbi: Db, limit = 12): Promise<ListWithCountsAndOwner[]> {
   const rows = await dbi

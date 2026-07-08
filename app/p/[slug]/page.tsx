@@ -6,6 +6,9 @@ import { getProductForPage } from "@/lib/db/queries/products";
 import { ResultsView } from "@/components/ResultsView";
 import { SiteHeader } from "@/components/SiteHeader";
 import { AddToList } from "@/components/lists/AddToList";
+import { UpvotePill } from "@/components/engagement/UpvotePill";
+import { getSessionUser } from "@/lib/auth";
+import { getVoteCount, hasVoted } from "@/lib/db/queries/votes";
 import type { Ingredient, Nutrition } from "@/lib/schema";
 
 // The canonical product page (Order G3): a permanent, shareable, SSR'd page per product, read
@@ -33,6 +36,12 @@ export default async function ProductPage({ params }: Params) {
   const data = await load(slug);
   if (!data) notFound();
 
+  // Engagement state (Order G7), SSR-hydrated.
+  const dbi = db()!; // load() already proved it exists
+  const viewer = await getSessionUser();
+  const voteCount = await getVoteCount(dbi, "product", data.product.id);
+  const viewerVoted = viewer ? await hasVoted(dbi, viewer.id, "product", data.product.id) : false;
+
   const ingredients: Partial<Ingredient>[] = data.items.map((i) => ({
     name: i.name,
     tag: i.tag ?? undefined,
@@ -55,6 +64,21 @@ export default async function ProductPage({ params }: Params) {
     <div className="relative min-h-screen">
       <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5">
         <SiteHeader action={<AddToList productId={data.product.id} />} />
+
+        {/* Engagement bar (Order G7, D-G7/G8): agreement, not a rating — and it says so. */}
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <UpvotePill
+            targetType="product"
+            targetId={data.product.id}
+            initialCount={voteCount}
+            initialVoted={viewerVoted}
+            withLabel
+            size="md"
+          />
+          <p className="text-xs text-muted">
+            Upvotes rank this in lists &amp; search. They aren&apos;t a verdict.
+          </p>
+        </div>
 
         {data.items.length > 0 ? (
           // loading={false} → ResultsView renders the finished (non-streaming) product view.

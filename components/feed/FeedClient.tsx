@@ -145,20 +145,34 @@ function Article({ article }: { article: FeedArticle }) {
           <span className="text-muted">
             {article.kind === "created_list"
               ? "created a list"
-              : `added ${article.count} ${article.count === 1 ? "product" : "products"} to`}
+              : article.kind === "added_items"
+                ? `added ${article.count} ${article.count === 1 ? "product" : "products"} to`
+                : "upvoted"}
           </span>{" "}
           {article.kind === "added_items" && (
             <Link href={`/list/${article.list.slug}`} className="font-medium text-ink hover:underline">
               &quot;{article.list.title}&quot;
             </Link>
           )}
+          {article.kind === "voted" &&
+            article.targets.map((t, i) => (
+              <span key={t.slug}>
+                {i > 0 && <span className="text-muted">, </span>}
+                <Link
+                  href={t.type === "list" ? `/list/${t.slug}` : `/p/${t.slug}`}
+                  className="font-medium text-ink hover:underline"
+                >
+                  {t.type === "list" ? `"${t.name}"` : t.name}
+                </Link>
+              </span>
+            ))}
         </p>
         <time className="shrink-0 text-xs tabular-nums text-muted" dateTime={article.ts}>
           {relTime(article.ts)}
         </time>
       </div>
 
-      {article.kind === "created_list" ? (
+      {article.kind === "voted" ? null : article.kind === "created_list" ? (
         // The richest event earns the card (D-G6 §3b) — same anatomy as the shipped ListCard.
         <Link
           href={`/list/${article.list.slug}`}

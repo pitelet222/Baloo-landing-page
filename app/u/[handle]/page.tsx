@@ -6,8 +6,10 @@ import {
   getListsByOwnerWithCounts,
   getPublicListsByOwnerWithCounts,
 } from "@/lib/db/queries/lists";
+import Link from "next/link";
 import { getSessionUser } from "@/lib/auth";
 import { getFollowCounts, isFollowing } from "@/lib/db/queries/follows";
+import { getSavedListsWithCounts } from "@/lib/db/queries/saves";
 import { coverCss, monogram } from "@/lib/cover";
 import { SiteHeader } from "@/components/SiteHeader";
 import { FollowButton } from "@/components/FollowButton";
@@ -18,7 +20,10 @@ import { ShareButton } from "@/components/lists/ShareButton";
 // only; the owner also sees their private ones (marked "private" on the card — never shown to
 // anyone else). Follow wires up in G6; Saved arrives with G7 (reserved tab).
 
-type Params = { params: Promise<{ handle: string }> };
+type Params = {
+  params: Promise<{ handle: string }>;
+  searchParams: Promise<{ tab?: string }>;
+};
 
 async function load(handle: string) {
   const dbi = db();
@@ -39,8 +44,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-export default async function ProfilePage({ params }: Params) {
+export default async function ProfilePage({ params, searchParams }: Params) {
   const { handle } = await params;
+  const { tab } = await searchParams;
+  const activeTab = tab === "saved" ? "saved" : "lists";
   const data = await load(handle);
   if (!data) notFound();
   const { dbi, profile } = data;
@@ -50,6 +57,10 @@ export default async function ProfilePage({ params }: Params) {
   const lists = isOwner
     ? await getListsByOwnerWithCounts(dbi, profile.id)
     : await getPublicListsByOwnerWithCounts(dbi, profile.id);
+  const savedLists =
+    activeTab === "saved"
+      ? await getSavedListsWithCounts(dbi, profile.id, { publicOnly: !isOwner })
+      : [];
   const publicCount = lists.filter((l) => l.isPublic).length;
   const joinedYear = profile.createdAt.getFullYear();
   const counts = await getFollowCounts(dbi, profile.id);
@@ -98,38 +109,55 @@ export default async function ProfilePage({ params }: Params) {
           </p>
         </section>
 
-        {/* Tabs per D-G5 §6 — Lists active; Saved reserved until G7 (shipped Soon pattern). */}
+        {/* Tabs — Saved went live with Order G7 (link-tabs, SSR). */}
         <div role="tablist" aria-label="Profile views" className="mt-6 flex gap-6 border-b border-line">
-          <button
+          <Link
             role="tab"
-            aria-selected
-            className="-mb-px border-b-2 border-natural py-3 text-[15px] font-semibold text-ink"
+            aria-selected={activeTab === "lists"}
+            href={`/u/${profile.handle}`}
+            className={`-mb-px border-b-2 py-3 text-[15px] transition ${
+              activeTab === "lists"
+                ? "border-natural font-semibold text-ink"
+                : "border-transparent font-medium text-muted hover:text-ink"
+            }`}
           >
             Lists
-          </button>
-          <button
+          </Link>
+          <Link
             role="tab"
-            aria-selected={false}
-            disabled
-            aria-disabled
-            className="-mb-px flex cursor-not-allowed items-center gap-1.5 border-b-2 border-transparent py-3 text-[15px] font-medium text-muted opacity-50"
+            aria-selected={activeTab === "saved"}
+            href={`/u/${profile.handle}?tab=saved`}
+            className={`-mb-px border-b-2 py-3 text-[15px] transition ${
+              activeTab === "saved"
+                ? "border-natural font-semibold text-ink"
+                : "border-transparent font-medium text-muted hover:text-ink"
+            }`}
           >
             Saved
-            <span className="rounded-full bg-line px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.09em] text-muted">
-              Soon
-            </span>
-          </button>
+          </Link>
         </div>
 
-        {lists.length === 0 ? (
+        {activeTab === "lists" ? (
+          lists.length === 0 ? (
+            <p className="mt-6 text-sm text-muted">
+              @{profile.handle} hasn&apos;t shared any public lists yet. When they make a list
+              public, it&apos;ll show up here.
+            </p>
+          ) : (
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              {lists.map((l) => (
+                <ListCard key={l.id} list={l} handle={profile.handle} />
+              ))}
+            </div>
+          )
+        ) : savedLists.length === 0 ? (
           <p className="mt-6 text-sm text-muted">
-            @{profile.handle} hasn&apos;t shared any public lists yet. When they make a list
-            public, it&apos;ll show up here.
+            No saved lists{isOwner ? " yet — tap Save on any list you want to keep." : "."}
           </p>
         ) : (
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            {lists.map((l) => (
-              <ListCard key={l.id} list={l} handle={profile.handle} />
+            {savedLists.map((l) => (
+              <ListCard key={l.id} list={l} handle={l.ownerHandle} />
             ))}
           </div>
         )}

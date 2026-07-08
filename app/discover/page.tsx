@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { db } from "@/lib/db";
-import { getPublicListsRecent } from "@/lib/db/queries/lists";
+import { getPopularListsThisWeek, getPublicListsRecent } from "@/lib/db/queries/lists";
 import { getRecentProducts } from "@/lib/db/queries/products";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ListCard } from "@/components/lists/ListCard";
@@ -17,9 +17,13 @@ export const metadata: Metadata = {
 // with H1's catalog taxonomy — until then: search, recent lists, and new products.
 export default async function DiscoverPage() {
   const dbi = db();
-  const [lists, products] = dbi
-    ? await Promise.all([getPublicListsRecent(dbi, 12), getRecentProducts(dbi, 8)])
-    : [[], []];
+  const [lists, products, popular] = dbi
+    ? await Promise.all([
+        getPublicListsRecent(dbi, 12),
+        getRecentProducts(dbi, 8),
+        getPopularListsThisWeek(dbi, 8),
+      ])
+    : [[], [], []];
 
   return (
     <div className="relative min-h-screen">
@@ -44,6 +48,18 @@ export default async function DiscoverPage() {
             </Suspense>
           </div>
         </section>
+
+        {/* Only rendered when real signal exists — never a fake ranking (Order G7). */}
+        {popular.length > 0 && (
+          <section className="mt-12">
+            <h2 className="font-display text-[23px] text-ink">Popular this week</h2>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {popular.map((l) => (
+                <ListCard key={l.id} list={l} handle={l.ownerHandle} />
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="mt-12">
           <h2 className="font-display text-[23px] text-ink">Recently added</h2>
