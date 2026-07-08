@@ -16,12 +16,12 @@ export function UpvotePill({
   withLabel = false,
   size = "sm",
 }: {
-  targetType: "product" | "list";
+  targetType: "product" | "list" | "comment";
   targetId: string;
   initialCount: number;
   initialVoted: boolean;
   withLabel?: boolean; // the product bar spells out "Upvote"
-  size?: "sm" | "md";
+  size?: "xs" | "sm" | "md";
 }) {
   const { available, user, refresh } = useAuth();
   const [voted, setVoted] = useState(initialVoted);
@@ -60,8 +60,13 @@ export function UpvotePill({
     }
   }
 
-  const pad = size === "md" ? "px-4 py-1.5 text-[13px]" : "px-3 py-1 text-xs";
-  const glyph = size === "md" ? "h-3.5 w-3.5" : "h-3 w-3";
+  const pad =
+    size === "md"
+      ? "px-4 py-1.5 text-[13px]"
+      : size === "xs"
+        ? "px-2 py-0.5 text-[11px]"
+        : "px-3 py-1 text-xs";
+  const glyph = size === "md" ? "h-3.5 w-3.5" : size === "xs" ? "h-2.5 w-2.5" : "h-3 w-3";
 
   return (
     <>

@@ -163,15 +163,7 @@ export default async function ListPage({ params }: Params) {
           </ul>
         )}
 
-        {/* Reserved (Order G7/G8) — designed now, wired later. */}
-        <div className="mt-6 rounded-2xl border border-dashed border-line bg-canvas/50 px-5 py-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Reserved</p>
-          <p className="mt-1 text-sm text-muted">
-            Votes and discussion arrive with a later update.
-          </p>
-        </div>
-
-        <p className="mt-6 text-center text-xs text-muted">
+        <p className="mt-8 text-center text-xs text-muted">
           Every product explained — tap any item.
         </p>
 

@@ -6,7 +6,7 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Db } from "../index";
 import { votes, type VoteTargetType } from "../schema";
 
-export type VotableType = Extract<VoteTargetType, "product" | "list">; // + "comment" in G8
+export type VotableType = Extract<VoteTargetType, "product" | "list" | "comment">;
 
 // Toggle semantics: first call upvotes, second removes. Returns the new state + live count.
 export async function toggleVote(
@@ -79,4 +79,25 @@ export async function getVoteCounts(
     .where(and(eq(votes.targetType, targetType), inArray(votes.targetId, targetIds)))
     .groupBy(votes.targetId);
   return new Map(rows.map((r) => [r.targetId, r.n]));
+}
+
+// Bulk "which of these did the viewer upvote" — SSR hydration for many targets at once (G8).
+export async function getVotedTargetIds(
+  dbi: Db,
+  userId: string,
+  targetType: VoteTargetType,
+  targetIds: string[],
+): Promise<Set<string>> {
+  if (targetIds.length === 0) return new Set();
+  const rows = await dbi
+    .select({ targetId: votes.targetId })
+    .from(votes)
+    .where(
+      and(
+        eq(votes.userId, userId),
+        eq(votes.targetType, targetType),
+        inArray(votes.targetId, targetIds),
+      ),
+    );
+  return new Set(rows.map((r) => r.targetId));
 }

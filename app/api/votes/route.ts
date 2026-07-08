@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { toggleVote, type VotableType } from "@/lib/db/queries/votes";
 import { recordActivity } from "@/lib/db/queries/activity";
 
-const VOTABLE: VotableType[] = ["product", "list"]; // + "comment" with G8
+const VOTABLE: VotableType[] = ["product", "list", "comment"];
 
 // Upvote toggle (Order G7). Single direction — there is no downvote, by design. An upvote is
 // feed-worthy (voted activity row); removing one isn't (history is history).
@@ -26,7 +26,8 @@ export async function POST(req: Request) {
   }
 
   const result = await toggleVote(dbi, gate.user.id, targetType, body.targetId);
-  if (result.voted) {
+  // Product/list upvotes are feed-worthy; a comment upvote is too light to be news.
+  if (result.voted && targetType !== "comment") {
     await recordActivity(dbi, {
       actorId: gate.user.id,
       verb: "voted",

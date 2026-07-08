@@ -7,8 +7,10 @@ import { ResultsView } from "@/components/ResultsView";
 import { SiteHeader } from "@/components/SiteHeader";
 import { AddToList } from "@/components/lists/AddToList";
 import { UpvotePill } from "@/components/engagement/UpvotePill";
+import { CommentThread } from "@/components/engagement/CommentThread";
 import { getSessionUser } from "@/lib/auth";
 import { getVoteCount, hasVoted } from "@/lib/db/queries/votes";
+import { getThread } from "@/lib/db/queries/comments";
 import type { Ingredient, Nutrition } from "@/lib/schema";
 
 // The canonical product page (Order G3): a permanent, shareable, SSR'd page per product, read
@@ -41,6 +43,7 @@ export default async function ProductPage({ params }: Params) {
   const viewer = await getSessionUser();
   const voteCount = await getVoteCount(dbi, "product", data.product.id);
   const viewerVoted = viewer ? await hasVoted(dbi, viewer.id, "product", data.product.id) : false;
+  const thread = await getThread(dbi, data.product.id, { sort: "top", viewerId: viewer?.id ?? null });
 
   const ingredients: Partial<Ingredient>[] = data.items.map((i) => ({
     name: i.name,
@@ -108,6 +111,9 @@ export default async function ProductPage({ params }: Params) {
             </p>
           </section>
         )}
+
+        {/* Product discussion (Order G8), SSR-hydrated. */}
+        <CommentThread productId={data.product.id} initial={thread} />
       </main>
     </div>
   );
