@@ -10,6 +10,7 @@ import { ListCover } from "@/components/lists/ListCover";
 import { ShareButton } from "@/components/lists/ShareButton";
 import { UpvotePill } from "@/components/engagement/UpvotePill";
 import { SavePill } from "@/components/engagement/SavePill";
+import { ReportControl } from "@/components/ReportControl";
 import { getVoteCount, hasVoted } from "@/lib/db/queries/votes";
 import { isSaved } from "@/lib/db/queries/saves";
 
@@ -115,6 +116,7 @@ export default async function ListPage({ params }: Params) {
               />
               <SavePill listId={list.id} initialSaved={viewerSaved} />
               <ShareButton path={`/list/${list.slug}`} />
+              {!isOwner && <ReportControl targetType="list" targetId={list.id} />}
             </div>
           </div>
         </section>

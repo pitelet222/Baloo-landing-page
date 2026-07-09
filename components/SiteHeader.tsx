@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Wordmark } from "./Wordmark";
 import { AccountMenu } from "./auth/AccountMenu";
+import { AdminNavLink } from "./AdminNavLink";
 
 // The shared page header (Order G5) — one component instead of seven hand-copied headers.
 // variant "center": homepage/welcome hero style (wordmark centered, controls floated right;
@@ -32,6 +33,7 @@ export function SiteHeader({
       <Link href="/lists" className="transition hover:text-ink">
         Lists
       </Link>
+      <AdminNavLink />
     </nav>
   );
 

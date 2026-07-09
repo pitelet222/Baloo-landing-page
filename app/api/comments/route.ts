@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser, getSessionUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { addComment, getThread, type ThreadSort } from "@/lib/db/queries/comments";
+import { addComment, deleteOwnComment, getThread, type ThreadSort } from "@/lib/db/queries/comments";
 import { recordActivity } from "@/lib/db/queries/activity";
 
 // Product discussion (Order G8a). Reads are public; posting requires auth.
@@ -51,4 +51,19 @@ export async function POST(req: Request) {
     objectId: body.productId,
   });
   return NextResponse.json({ id: res.id });
+}
+
+// Author self-delete (Order G9): soft-hide, ownership enforced in the query.
+export async function DELETE(req: Request) {
+  const gate = await requireUser();
+  if ("error" in gate) return gate.error;
+  const dbi = db();
+  if (!dbi) return NextResponse.json({ error: "db_not_configured" }, { status: 503 });
+
+  const id = new URL(req.url).searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "bad_request" }, { status: 400 });
+
+  const ok = await deleteOwnComment(dbi, id, gate.user.id);
+  if (!ok) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  return NextResponse.json({ ok: true });
 }

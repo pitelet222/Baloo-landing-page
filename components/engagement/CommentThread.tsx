@@ -10,6 +10,8 @@ import { useAuth } from "@/components/auth/useAuth";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { UpvotePill } from "@/components/engagement/UpvotePill";
 import { Wordmark } from "@/components/Wordmark";
+import { OverflowMenu, OverflowItem } from "@/components/OverflowMenu";
+import { ReportDialog } from "@/components/ReportDialog";
 import { monogram } from "@/lib/cover";
 import type { ThreadComment, ThreadSort } from "@/lib/db/queries/comments";
 import type { Explanation } from "@/lib/schema";
@@ -304,11 +306,31 @@ function CommentRow({
   onChanged: () => Promise<void>;
   isReply?: boolean;
 }) {
-  const { available, profile } = useAuth();
+  const { available, user, profile } = useAuth();
   const [replying, setReplying] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const explain = useExplain({ commentId: comment.id }, signedIn, onNeedAuth);
+  const isAuthor = !!user && user.id === comment.authorId;
 
   const avatarSize = isReply ? "h-7 w-7 text-[11px]" : "h-[34px] w-[34px] text-xs";
+
+  // Tombstone: a removed comment keeps its slot (so replies aren't orphaned) but leaks nothing.
+  if (comment.hidden) {
+    return (
+      <div className={isReply ? "py-3" : "border-b border-line py-4"}>
+        <p className="text-sm italic text-muted">This comment was removed.</p>
+        {comment.replies.length > 0 && (
+          <ul className="mt-2 border-l border-line pl-4">
+            {comment.replies.map((r) => (
+              <li key={r.id}>
+                <CommentRow comment={r} productId={productId} signedIn={signedIn} onNeedAuth={onNeedAuth} onChanged={onChanged} isReply />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={isReply ? "py-3" : "border-b border-line py-4"}>
@@ -320,14 +342,42 @@ function CommentRow({
           {monogram(comment.author.displayName)}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="flex flex-wrap items-baseline gap-x-2 text-sm">
+          <div className="flex flex-wrap items-baseline gap-x-2 text-sm">
             <Link href={`/u/${comment.author.handle}`} className="font-semibold text-ink hover:underline">
               @{comment.author.handle}
             </Link>
             <time className="text-xs tabular-nums text-muted" dateTime={comment.ts}>
               {relTime(comment.ts)}
             </time>
-          </p>
+            <span className="ml-auto">
+              <OverflowMenu label="Comment actions">
+                {(close) =>
+                  isAuthor ? (
+                    <OverflowItem
+                      danger
+                      onClick={async () => {
+                        close();
+                        if (!confirm("Delete this comment?")) return;
+                        const res = await fetch(`/api/comments?id=${comment.id}`, { method: "DELETE" });
+                        if (res.ok) await onChanged();
+                      }}
+                    >
+                      Delete
+                    </OverflowItem>
+                  ) : (
+                    <OverflowItem
+                      onClick={() => {
+                        close();
+                        signedIn ? setReportOpen(true) : onNeedAuth();
+                      }}
+                    >
+                      Report
+                    </OverflowItem>
+                  )
+                }
+              </OverflowMenu>
+            </span>
+          </div>
           <p className={`mt-1 whitespace-pre-wrap leading-relaxed text-ink/70 ${isReply ? "text-sm" : "text-[15px]"}`}>
             {comment.body}
           </p>
@@ -405,6 +455,10 @@ function CommentRow({
           )}
         </div>
       </div>
+
+      {reportOpen && (
+        <ReportDialog targetType="comment" targetId={comment.id} onClose={() => setReportOpen(false)} />
+      )}
     </div>
   );
 }
