@@ -211,6 +211,35 @@ designing from scratch.
 
 ---
 
+## PART C — Design workflow (apply to every new screen)
+
+Standing rules for how we design each surface, per Jitain's tooling notes. These are process, not
+one-off orders — run them on the analysis result, list detail, two-mode search, quick-view, and
+Discover.
+
+1. **Three approaches first.** Before committing to a layout, have the tool produce THREE genuinely
+   different UX directions — different information hierarchy and interaction model, not colour
+   swaps. In Figma Make, use Jitain's trick: ask it to include **v1 / v2 / v3 links in the header**
+   so all three are browsable from one build. In Claude Code, prompt "show me three completely
+   different UX approaches" and pick before building.
+2. **Ritual review on every meaningful screen**, then apply the best fixes:
+   > "You're Dieter Rams, Jony Ive, the Linear design team, and the Duolingo product team. Critique
+   > this screen. Ignore implementation complexity. Focus purely on clarity, cognitive load,
+   > information hierarchy, and delight. Give me 20 concrete improvements."
+3. **Guardrail as design tools enter: gamified/animated ≠ scored.** The tooling references keep using
+   a "72/100" score example — that is NOT Baloo. Keep it score-free: no number, no traffic lights,
+   no verdict. Animation and delight (later, via Rive — loading states, empty states, the card
+   reveal) are welcome; a health score is not.
+4. **Mobbin references to pull (align with Jitain before building), mapped to our surfaces:**
+   - *Lists as the core object:* Letterboxd (profile + lists + item page), Goodreads (Listopia
+     community-ranked lists), Pinterest (boards, save, quick-view), Are.na (channels).
+   - *Discovery + light social:* Vivino (product page + scan + community), Untappd (logging + friends),
+     Beli (ranked lists + following), Thingtesting (discovery + reviews).
+   - *Add-to-collection search flow:* Spotify (search → add to playlist), Pinterest (save to board).
+   - *Product / analysis detail:* Vivino product page; Yuka's ingredient screen (borrow the clarity,
+     drop the score).
+   - *Quick-view drawer / sheet:* Pinterest pin quick-view and common mobile bottom-sheets.
+
 ## Suggested build sequence
 
 1 (auth + Supabase) → 2 (schema) → 3 (analysis as stored product) → 4 (background analysis) →

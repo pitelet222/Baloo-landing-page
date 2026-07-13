@@ -78,6 +78,26 @@ Sequenced; one order per session, plan-first, commit per order (same rhythm as G
 **Suggested sequence:** P1 → P2 → P3 (+ P4) → P5 → P6 → P7. (P6 can slot earlier if discovery needs
 to feel fuller sooner, but it's gated on the OFF/legal posture above.)
 
+## 2b. Design workflow (spec PART C) — applies to every P-series UI order
+Standing process now baked into P3/P4/P5 + list detail + the Discover/nav work:
+- **Three approaches first.** For each meaningful screen, produce THREE genuinely different UX
+  directions (different hierarchy/interaction, not colour swaps) and pick before committing. In
+  Claude Code I'll present the three inline; in Figma Make, the v1/v2/v3-in-header trick (the
+  attached `.make` prototype already does this on the home/analysis surface).
+- **Critique ritual** on every meaningful screen: the "Rams / Ive / Linear / Duolingo — 20 concrete
+  improvements, ignore implementation complexity" pass, then apply the best fixes.
+- **Hard guardrail — score-free.** The tooling's "72/100" example is NOT Baloo: no number, no
+  traffic lights, no verdict, ever. (Already true across G1–P1 — the Natural/Processed pill is the
+  only meaningful colour.) Delight/animation later via **Rive** (loading, empty, card-reveal) is
+  welcome; a health score is not.
+- **Mobbin references** (align with Jitain before building), mapped to our surfaces: Letterboxd/
+  Goodreads/Pinterest/Are.na (lists) · Vivino/Untappd/Beli/Thingtesting (discovery+social) ·
+  Spotify/Pinterest (add-to-collection search) · Vivino + Yuka *minus the score* (product detail) ·
+  Pinterest quick-view + mobile bottom-sheets (P5 drawer/sheet).
+- **Nav signal from the `.make` prototype:** a left sidebar (Home · Discover · My Lists · @username)
+  — differs from the shipped top nav (Following · Discover · Lists · Admin). Fold into **P7**;
+  don't change nav mid-P-series.
+
 ## 3. Claude Design handoffs (spec Part B) — send now
 The spec's **Part B (B1–B7)** is the design brief; it maps cleanly onto the P-orders. Send first,
 in this order: **B2** (seamless create-a-list), **B3** (list detail: view-analysis icon +
