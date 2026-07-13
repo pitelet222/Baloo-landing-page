@@ -3,15 +3,17 @@
 // configured (optional-infra rule), and it swallows its own errors so it can never break the
 // user's analysis stream (it runs inside the analyze route's after()).
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db, type Db } from "./db";
 import {
   ingredientProfileItems,
   ingredientProfiles,
   ingredients as ingredientsTable,
   nutrition as nutritionTable,
+  products as productsTable,
 } from "./db/schema";
 import { upsertProductByCanonicalKey } from "./db/queries/products";
+import { upsertOffer } from "./db/queries/offers";
 import { canonicalKey, ingredientKey, productSlug } from "./canonical";
 import type { Ingredient, Nutrition } from "./schema";
 
@@ -42,6 +44,16 @@ export async function ingestAnalysis(
       retailer: input.retailer ?? null,
       source: "user_scan",
     });
+
+    // Record this retailer's listing as an offer (Order P1). A second retailer scanning the same
+    // product converges on the same product row with a distinct offer — the dedup, live.
+    await upsertOffer(dbi, { productId: product.id, retailer: input.retailer, url: input.url });
+
+    // The canonical analysis is by definition complete once we ingest it.
+    await dbi
+      .update(productsTable)
+      .set({ analysisStatus: "done", analysedAt: sql`now()` })
+      .where(eq(productsTable.id, product.id));
 
     // Fill the product-INDEPENDENT ingredient cache once (what_it_is reused across products).
     await cacheIngredients(dbi, input.ingredients);

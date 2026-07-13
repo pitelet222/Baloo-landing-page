@@ -17,6 +17,7 @@ import {
   index,
   integer,
   jsonb,
+  numeric,
   pgEnum,
   pgTable,
   primaryKey,
@@ -31,6 +32,14 @@ import type { Nutrient } from "../schema";
 // ── Stable enums ──────────────────────────────────────────────────────────────────────────────
 export const tagEnum = pgEnum("ingredient_tag", ["Natural", "Processed"]);
 export const perEnum = pgEnum("nutrition_per", ["100g", "serving", "both"]);
+// Analysis lifecycle (Order P1): 'done' the moment a product's canonical analysis exists; 'pending'
+// / 'analysing' while a background job (P2) is resolving a product added to a list; 'failed' retries.
+export const analysisStatusEnum = pgEnum("analysis_status", [
+  "pending",
+  "analysing",
+  "done",
+  "failed",
+]);
 
 // ── Evolving discriminators (text columns + TS unions) ───────────────────────────────────────
 export type ProductSource = "user_scan" | "open_food_facts" | "go_upc";
@@ -72,10 +81,40 @@ export const products = pgTable(
     barcode: text("barcode"),
     imageUrl: text("image_url"),
     source: text("source").$type<ProductSource>().notNull().default("user_scan"),
+    // Analysis lifecycle (Order P1). Default 'done': every existing row reached the catalog via a
+    // completed ingest. P2's background job flips new-to-Baloo products pending→analysing→done.
+    analysisStatus: analysisStatusEnum("analysis_status").notNull().default("done"),
+    analysedAt: timestamp("analysed_at", { withTimezone: true }),
+    category: text("category"), // OFF/H1 taxonomy later; readies /c/[category]
     createdBy: uuid("created_by").references(() => profiles.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("products_barcode_idx").on(t.barcode)],
+);
+
+// Offers (Order P1): a retailer's listing of a product. Two retailer listings of the same barcode
+// are TWO offers on ONE product — this is the whole point of the Product/Offer split (dedup +
+// "also available at", P4). price/currency/priceAt exist but stay NULL in v1 (no pricing yet; an
+// affiliate future would live here, behind visible disclosure).
+export const offers = pgTable(
+  "offers",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    retailer: text("retailer"),
+    url: text("url"),
+    available: boolean("available").notNull().default(true),
+    price: numeric("price"),
+    currency: text("currency"),
+    priceAt: timestamp("price_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("offers_product_retailer_url_uq").on(t.productId, t.retailer, t.url),
+    index("offers_product_idx").on(t.productId),
+  ],
 );
 
 export const ingredientProfiles = pgTable(
@@ -295,3 +334,5 @@ export type List = typeof lists.$inferSelect;
 export type ListItem = typeof listItems.$inferSelect;
 export type Comment = typeof comments.$inferSelect;
 export type Report = typeof reports.$inferSelect;
+export type Offer = typeof offers.$inferSelect;
+export type AnalysisStatus = (typeof analysisStatusEnum.enumValues)[number];

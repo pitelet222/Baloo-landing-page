@@ -43,6 +43,13 @@
       "when": 1783532538582,
       "tag": "0005_moderation",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1783957032380,
+      "tag": "0006_offers_product_status",
+      "breakpoints": true
     }
   ]
 }
