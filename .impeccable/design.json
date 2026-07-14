@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-14T00:00:00.000Z",
+  "title": "Design System: Baloo",
+  "extensions": {
+    "colorMeta": {
+      "ink": { "role": "primary", "displayName": "Near-Black Ink", "canonical": "#1A1A18", "tonalRamp": ["#1A1A18", "#2E2E2B", "#454541", "#5F5F59", "#7C7C74", "#9C9C93", "#C2C2B8", "#ECEBE5"] },
+      "muted": { "role": "neutral", "displayName": "Stone Grey", "canonical": "#6F756E", "tonalRamp": ["#2C2F2B", "#3F433D", "#565A52", "#6F756E", "#8B9089", "#AAB0A8", "#CDD1CB", "#ECEEE9"] },
+      "line": { "role": "neutral", "displayName": "Bone Hairline", "canonical": "#ECEBE5", "tonalRamp": ["#5F5E58", "#77766F", "#918F87", "#ACA99F", "#C7C4BA", "#DEDCD2", "#ECEBE5", "#F6F5F1"] },
+      "paper": { "role": "neutral", "displayName": "Paper White", "canonical": "#FFFFFF", "tonalRamp": ["#E9E9E4", "#EFEFEA", "#F4F4F0", "#F8F8F5", "#FBFBF8", "#FDFDFB", "#FEFEFD", "#FFFFFF"] },
+      "canvas": { "role": "neutral", "displayName": "Warm Canvas", "canonical": "#FBFBF8", "tonalRamp": ["#E7E7E1", "#EDEDE7", "#F2F2ED", "#F6F6F2", "#FBFBF8", "#FCFCFA", "#FDFDFC", "#FFFFFF"] },
+      "natural": { "role": "secondary", "displayName": "Field Green", "canonical": "#2E7D52", "tonalRamp": ["#12331F", "#194429", "#215736", "#2E7D52", "#4A9A6E", "#79B995", "#AED8C1", "#E7F1EB"] },
+      "processed": { "role": "secondary", "displayName": "Ochre", "canonical": "#B5701F", "tonalRamp": ["#3C2408", "#5A360D", "#7C4B14", "#B5701F", "#CE8B3D", "#E0AC72", "#EED2A9", "#F6ECDD"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display (Fraunces)", "purpose": "Page H1s and hero headlines. Fixed rem per breakpoint, not fluid." },
+      "headline": { "displayName": "Headline (Fraunces)", "purpose": "Section headings." },
+      "title": { "displayName": "Title (Fraunces)", "purpose": "Card and list-item titles; product name." },
+      "body": { "displayName": "Body (Inter)", "purpose": "All prose; capped at 65-75ch inside the 640px column." },
+      "label": { "displayName": "Label (Inter)", "purpose": "Small uppercase rubrics, used sparingly." }
+    },
+    "shadows": [
+      { "name": "card", "value": "0 1px 2px rgba(26,26,24,0.04), 0 1px 3px rgba(26,26,24,0.05)", "purpose": "Whisper-faint lift under a paper card at rest." },
+      { "name": "card-hover", "value": "0 4px 14px rgba(26,26,24,0.07), 0 2px 5px rgba(26,26,24,0.04)", "purpose": "Hover response for interactive cards; pairs with border -> #dedcd2." },
+      { "name": "hero", "value": "0 1px 2px rgba(26,26,24,0.05), 0 10px 30px -12px rgba(26,26,24,0.12)", "purpose": "The single floating hero element (home analyse input). One per screen." }
+    ],
+    "motion": [
+      { "name": "rise", "value": "translateY(6px) -> 0, opacity 0 -> 1, 0.35s ease-out", "purpose": "Cards/rows settling in as data resolves." },
+      { "name": "fade-in", "value": "opacity 0 -> 1, 0.5s ease-out", "purpose": "View/state switch." },
+      { "name": "pulse-dot", "value": "opacity + scale, 2.6s ease-in-out infinite", "purpose": "The board's gentle live dot; the only looping motion." },
+      { "name": "reduced-motion", "value": "all durations -> ~0", "purpose": "globals.css zeroes every animation under prefers-reduced-motion. Non-negotiable." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single strongest action on a surface (Analyse, Post).",
+      "html": "<button class=\"ds-btn-primary\">Analyse</button>",
+      "css": ".ds-btn-primary { background: #1A1A18; color: #fff; border: none; border-radius: 9999px; padding: 10px 16px; font-family: Inter, system-ui, sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: background .2s ease-out; } .ds-btn-primary:hover { background: rgba(26,26,24,.85); } .ds-btn-primary:focus-visible { outline: 2px solid rgba(46,125,82,.4); outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "The default control: quiet, hairline-bordered, gets out of the way.",
+      "html": "<button class=\"ds-btn-ghost\">Share</button>",
+      "css": ".ds-btn-ghost { background: #fff; color: #1A1A18; border: 1px solid #ECEBE5; border-radius: 9999px; padding: 6px 14px; font-family: Inter, system-ui, sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: border-color .2s ease-out, background .2s ease-out; } .ds-btn-ghost:hover { border-color: rgba(26,26,24,.2); background: #FBFBF8; }"
+    },
+    {
+      "name": "Natural Tag",
+      "kind": "chip",
+      "refersTo": "tag-natural",
+      "description": "The ONLY meaningful colour in the system. Classification, never a control.",
+      "html": "<span class=\"ds-tag-natural\">Natural</span>",
+      "css": ".ds-tag-natural { display: inline-flex; align-items: center; background: #E7F1EB; color: #2E7D52; border-radius: 9999px; padding: 3px 10px; font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 600; }"
+    },
+    {
+      "name": "Processed Tag",
+      "kind": "chip",
+      "refersTo": "tag-processed",
+      "description": "The amber classification counterpart. Again, only ever a tag.",
+      "html": "<span class=\"ds-tag-processed\">Processed</span>",
+      "css": ".ds-tag-processed { display: inline-flex; align-items: center; background: #F6ECDD; color: #B5701F; border-radius: 9999px; padding: 3px 10px; font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 600; }"
+    },
+    {
+      "name": "Engagement Pill (Upvote, active)",
+      "kind": "chip",
+      "refersTo": "button-ghost",
+      "description": "Neutral, ink-tinted engagement control -- NEVER green/amber. Active = ink border + ink/5% fill.",
+      "html": "<button class=\"ds-pill-active\" aria-pressed=\"true\"><svg viewBox=\"0 0 12 12\" width=\"12\" height=\"12\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2.5 7.5L6 4l3.5 3.5\"/></svg><span>3</span></button>",
+      "css": ".ds-pill-active { display: inline-flex; align-items: center; gap: 6px; background: rgba(26,26,24,.05); color: #1A1A18; border: 1px solid #1A1A18; border-radius: 9999px; padding: 4px 12px; font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; transition: background .2s ease-out, border-color .2s ease-out; } .ds-pill-active span { font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Paper on canvas, inside a hairline. Flat at rest; lifts on hover if interactive.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-title\">Best breakfast picks</div><div class=\"ds-card-meta\">6 products</div></div>",
+      "css": ".ds-card { background: #fff; border: 1px solid #ECEBE5; border-radius: 16px; box-shadow: 0 1px 2px rgba(26,26,24,.04), 0 1px 3px rgba(26,26,24,.05); padding: 16px; transition: box-shadow .2s ease-out, border-color .2s ease-out; } .ds-card:hover { box-shadow: 0 4px 14px rgba(26,26,24,.07), 0 2px 5px rgba(26,26,24,.04); border-color: #dedcd2; } .ds-card-title { font-family: Fraunces, Georgia, serif; font-size: 19px; color: #1A1A18; } .ds-card-meta { font-family: Inter, system-ui, sans-serif; font-size: 13px; color: #6F756E; margin-top: 4px; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Paper field, hairline border; the one place green appears on a control -- transiently, as the focus ring.",
+      "html": "<input class=\"ds-input\" placeholder=\"Search products and lists…\" />",
+      "css": ".ds-input { width: 100%; background: #fff; color: #1A1A18; border: 1px solid #ECEBE5; border-radius: 9999px; padding: 12px 20px; font-family: Inter, system-ui, sans-serif; font-size: 15px; outline: none; transition: border-color .2s ease-out, box-shadow .2s ease-out; } .ds-input::placeholder { color: #6F756E; } .ds-input:focus { border-color: #2E7D52; box-shadow: 0 0 0 2px rgba(46,125,82,.2); }"
+    },
+    {
+      "name": "Explain Card (signature)",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "The one card in a card-less thread. Headed by the wordmark (never an avatar); no engagement controls -- you cannot vote on a fact.",
+      "html": "<div class=\"ds-explain\"><div class=\"ds-explain-head\"><svg viewBox=\"0 0 16 16\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"#2E7D52\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8 2.5l1.3 3.2L12.5 7l-3.2 1.3L8 11.5 6.7 8.3 3.5 7l3.2-1.3z\"/></svg><span class=\"ds-wordmark\">Baloo</span><span class=\"ds-explain-label\">Explanation</span></div><div class=\"ds-explain-body\"><p><b>What it is.</b> Acidity regulators control a product's pH.</p><p><b>In this product.</b> It keeps a long-life oat drink stable on the shelf.</p><p class=\"ds-explain-note\">Generated by Baloo from the product label. A factual explanation, not a health claim or an opinion.</p></div></div>",
+      "css": ".ds-explain { background: #fff; border: 1px solid #ECEBE5; border-radius: 12px; overflow: hidden; } .ds-explain-head { display: flex; align-items: center; gap: 8px; background: #FBFBF8; border-bottom: 1px solid #ECEBE5; padding: 10px 16px; } .ds-wordmark { font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 14px; color: #1A1A18; } .ds-explain-label { font-family: Inter, system-ui, sans-serif; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .13em; color: #6F756E; } .ds-explain-body { padding: 16px; font-family: Inter, system-ui, sans-serif; font-size: 15px; line-height: 1.6; color: rgba(26,26,24,.8); } .ds-explain-body b { color: #1A1A18; } .ds-explain-note { margin-top: 12px; padding-top: 12px; border-top: 1px solid #ECEBE5; font-size: 12px; color: #6F756E; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Quiet Field Guide",
+    "overview": "Baloo looks like a clear, plain-language reference you already trust -- a field guide to the supermarket aisle, not a lab report and not an alarm. Near-white paper, near-black ink, structure from thin hairlines and whitespace. A warm serif (Fraunces) carries the voice; a clean sans (Inter) does the work. Deliberately restrained: exactly one place colour means anything (the green/amber Natural/Processed tags), everything else a disciplined neutral. Flat by default; shadow and motion appear only as a response to state.",
+    "keyCharacteristics": [
+      "Ink on near-white paper; hairlines and whitespace over boxes and shadows.",
+      "Fraunces serif for the calm editorial voice; Inter sans for all the working UI.",
+      "One meaningful colour (green/amber = Natural/Processed), everything else neutral.",
+      "Flat at rest; motion and shadow appear only as a response to state.",
+      "No score, no rating, no traffic-light verdict -- anywhere, ever."
+    ],
+    "rules": [
+      { "name": "The One Meaningful Colour Rule", "body": "Green and amber appear only as the Natural/Processed ingredient tags. Every interactive state is ink-tinted neutral, never green or amber.", "section": "colors" },
+      { "name": "The Ink-Not-Black Rule", "body": "Text is ink (#1A1A18), never #000000. Pure black on paper is harsh and clinical.", "section": "colors" },
+      { "name": "The Two-Voice Rule", "body": "Fraunces speaks (headings, wordmark, the AI answer); Inter works (everything you operate).", "section": "typography" },
+      { "name": "The Hairline-First Rule", "body": "Reach for a 1px line border before a shadow. A surface with both a heavy shadow and a border is over-built.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do structure with 1px line hairlines and whitespace first; add shadow only for hover-lift.",
+      "Do keep prose in the 640px reading column, 65-75ch.",
+      "Do set headings and the wordmark in Fraunces; set every control, label, and value in Inter.",
+      "Do keep every engagement control neutral -- ink border + ink/5% fill when active.",
+      "Do give the Natural/Processed tag a text label always, so meaning never depends on colour alone.",
+      "Do use ink (#1A1A18) for text, never #000000."
+    ],
+    "donts": [
+      "Don't add a score, rating, 0-100 number, or red/amber/green traffic-light verdict anywhere.",
+      "Don't let green or amber appear outside the Natural/Processed tags.",
+      "Don't make it feel clinical or medical: no chart-grid dashboards, warning banners, or sterile health-record chrome.",
+      "Don't use alarmist 'toxic ingredient' fear language, red danger states, or scare imagery.",
+      "Don't use a border-left/right greater than 1px as a coloured accent stripe.",
+      "Don't use gradient text or decorative glassmorphism; emphasis comes from weight, size, and Fraunces.",
+      "Don't drop an ambient shadow on everything; a card with a heavy shadow and a border is over-built.",
+      "Don't stack a tiny uppercase eyebrow above every section."
+    ]
+  }
+}

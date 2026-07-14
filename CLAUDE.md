@@ -6,6 +6,13 @@ Analyse, and gets a streamed, per-ingredient breakdown: what each ingredient is,
 product, a Natural/Processed tag, and any listed %. The homepage IS the tool — no separate landing
 and app pages. This is the prototype for a future mobile app; keep the pipeline portable.
 
+## Design context
+The design system lives at the repo root: `PRODUCT.md` (strategic — register/users/positioning and
+the design principles, incl. the unbreakable score-free guardrail) and `DESIGN.md` (visual — tokens,
+the "Quiet Field Guide" north star, named rules; machine layer in `.impeccable/design.json`). The
+`/impeccable` skill drives design/UI work and reads both. To change the design context, edit those
+root files; blank skeletons to reset or seed new ones are in `docs/templates/`.
+
 ## Pipeline (do not deviate without flagging)
 `URL → Firecrawl (markdown) → Claude extract → Claude analyse → stream cards`
 - /api/extract  — validate URL, check cache, Firecrawl scrape, Claude `generateObject` extract.
