@@ -52,7 +52,13 @@ Sequenced; one order per session, plan-first, commit per order (same rhythm as G
   add `products.analysis_status` + `analysed_at` (+ `category` NULL); **graduate the Redis
   extract/analyze cache from URL-hash → identity (barcode-first) key**; backfill one offer per
   existing product from its `retailer`+source URL. Add `pg_trgm` index on `products.name`.
-- **P2 — Analysis pipeline as a lib + background job.** Extract the Firecrawl→extract→analyse
+- **P2 — Analysis pipeline as a lib + background job.** **Carried fix (fold in first): migration
+  `0007_offers_rls` — enable RLS on `public.offers` with policies matching `0001_rls.sql` (public
+  read, server-side writes only).** The Supabase security advisor flagged `offers` (added in P1)
+  as `rls_disabled_in_public`; server-side Drizzle bypasses RLS so the app works, but our
+  defence-in-depth rule requires every public table to have it. (Also, dashboard-only, before
+  launch: enable Auth leaked-password protection; optionally move `pg_trgm` out of `public`.)
+  Then the pipeline work: extract the Firecrawl→extract→analyse
   pipeline into framework-agnostic `lib/analysis/*`; `POST /api/products/analyze` (by product id);
   new-product-add path inserts `pending` → `after()`/`waitUntil` → `analysing` → `done|failed`;
   surface status via Supabase Realtime on the product row (fallback: poll). Retry from the viewer.
