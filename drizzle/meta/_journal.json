@@ -50,6 +50,13 @@
       "when": 1783957032380,
       "tag": "0006_offers_product_status",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1784104555302,
+      "tag": "0007_offers_rls",
+      "breakpoints": true
     }
   ]
 }

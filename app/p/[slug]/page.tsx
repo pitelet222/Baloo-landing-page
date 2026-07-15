@@ -11,6 +11,7 @@ import { CommentThread } from "@/components/engagement/CommentThread";
 import { getSessionUser } from "@/lib/auth";
 import { getVoteCount, hasVoted } from "@/lib/db/queries/votes";
 import { getThread } from "@/lib/db/queries/comments";
+import { storedIngredients } from "@/lib/analysis/stored";
 import type { Ingredient, Nutrition } from "@/lib/schema";
 
 // The canonical product page (Order G3): a permanent, shareable, SSR'd page per product, read
@@ -45,15 +46,8 @@ export default async function ProductPage({ params }: Params) {
   const viewerVoted = viewer ? await hasVoted(dbi, viewer.id, "product", data.product.id) : false;
   const thread = await getThread(dbi, data.product.id, { sort: "top", viewerId: viewer?.id ?? null });
 
-  const ingredients: Partial<Ingredient>[] = data.items.map((i) => ({
-    name: i.name,
-    tag: i.tag ?? undefined,
-    role: i.role ?? undefined,
-    what_it_is: i.whatItIs ?? "",
-    why_its_here: i.whyItsHere ?? "",
-    percentage: i.percent ?? null,
-    percentage_note: i.percentageNote ?? null,
-  }));
+  // One shared mapping (Order P2) so this page and the extract short-circuit can't drift apart.
+  const ingredients: Partial<Ingredient>[] = storedIngredients(data);
 
   const nutrition: Nutrition | undefined = data.nutrition
     ? {

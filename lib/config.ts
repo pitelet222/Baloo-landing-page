@@ -8,6 +8,14 @@ export const CACHE_TTL_SECONDS = 7 * 24 * 60 * 60;
 // API routes do a Firecrawl scrape + one or two Claude calls; give them room.
 export const ROUTE_MAX_DURATION = 60;
 
+// Max output tokens for the per-ingredient analysis (Order P2 — this was a real bug).
+// The AI SDK's Anthropic provider defaults to 4096 output tokens. The Order-A prompt asks for
+// 2-3 sentences of what_it_is AND why_its_here for EVERY ingredient, so a long label blows past
+// 4096: the model stops at finishReason 'length', the object never validates, and the whole
+// analysis is lost — silently, because the persist runs inside after(). Set it generously; we pay
+// for tokens produced, not for the ceiling.
+export const ANALYSIS_MAX_TOKENS = 16000;
+
 // Retailers the brief commits to supporting. Used for client-side URL validation
 // and for the friendly error copy. Extend by adding to this list.
 export const SUPPORTED_RETAILERS: { name: string; match: string[] }[] = [

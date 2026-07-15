@@ -2,7 +2,7 @@
 // null-guard (`const dbi = db(); if (!dbi) ...`), keeping "database optional" visible at the
 // call site. G3's ingestion and product page consume these.
 
-import { and, desc, eq, ilike, inArray, or } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, isNotNull, or } from "drizzle-orm";
 import type { Db } from "../index";
 import { ingredientKey } from "../../canonical";
 import {
@@ -10,7 +10,9 @@ import {
   ingredientProfileItems,
   ingredientProfiles,
   nutrition,
+  offers,
   products,
+  type AnalysisStatus,
   type IngredientProfileItem,
   type NewProduct,
   type NutritionRow,
@@ -53,6 +55,36 @@ export async function getProductBySlugOrKey(dbi: Db, slugOrKey: string): Promise
 export async function getProductById(dbi: Db, id: string): Promise<Product | null> {
   const [row] = await dbi.select().from(products).where(eq(products.id, id)).limit(1);
   return row ?? null;
+}
+
+// Analysis lifecycle (Order P2). pending → analysing → done | failed.
+export async function setAnalysisStatus(
+  dbi: Db,
+  productId: string,
+  status: AnalysisStatus,
+): Promise<void> {
+  await dbi.update(products).set({ analysisStatus: status }).where(eq(products.id, productId));
+}
+
+/**
+ * What the background job needs to (re)analyse a product: the product plus the URL to scrape.
+ * The URL comes from its offers — which is exactly why P1 put them there. Prefers the most
+ * recently recorded offer that actually has a URL (backfilled offers have none).
+ */
+export async function getProductAnalysisTarget(
+  dbi: Db,
+  productId: string,
+): Promise<{ product: Product; url: string } | null> {
+  const product = await getProductById(dbi, productId);
+  if (!product) return null;
+  const [offer] = await dbi
+    .select({ url: offers.url })
+    .from(offers)
+    .where(and(eq(offers.productId, productId), isNotNull(offers.url)))
+    .orderBy(desc(offers.createdAt))
+    .limit(1);
+  if (!offer?.url) return null;
+  return { product, url: offer.url };
 }
 
 // The product page's main read: the ACTIVE ingredient profile + its items in label order.

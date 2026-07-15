@@ -4,7 +4,7 @@ import { anthropic } from "@ai-sdk/anthropic";
 import { analysisSchema } from "@/lib/schema";
 import { analysisPrompt } from "@/lib/prompts";
 import { cacheSet } from "@/lib/cache";
-import { MODEL } from "@/lib/config";
+import { ANALYSIS_MAX_TOKENS, MODEL } from "@/lib/config";
 import { mockAnalyzeStream } from "@/lib/mock";
 import { recordScan } from "@/lib/stats";
 import { ingestAnalysis } from "@/lib/ingest";
@@ -28,6 +28,10 @@ export async function POST(req: Request) {
   const result = streamObject({
     model: anthropic(MODEL),
     schema: analysisSchema,
+    // Without this the SDK caps output at 4096 tokens: a long label truncates mid-stream, the
+    // final object never validates, and the after() persist below throws — so the cache write,
+    // the catalog ingest AND the scan record are all silently lost. (Order P2.)
+    maxTokens: ANALYSIS_MAX_TOKENS,
     prompt: analysisPrompt({
       product_name,
       retailer,
