@@ -81,8 +81,29 @@ Sequenced; one order per session, plan-first, commit per order (same rhythm as G
   the fate/exposure of the already-built Following feed / comments / moderation (recommend keep,
   de-emphasize); update `CLAUDE.md` to the reconciled rules.
 
-**Suggested sequence:** P1 → P2 → P3 (+ P4) → P5 → P6 → P7. (P6 can slot earlier if discovery needs
-to feel fuller sooner, but it's gated on the OFF/legal posture above.)
+- **P8 — One-click social share (the distribution loop).** Jitain's ask: share a list to
+  Instagram / Telegram / WhatsApp in one click. Today `components/lists/ShareButton.tsx` only does
+  native-share-or-copy-link. Upgrade it to a **share menu with explicit per-app targets**, reusing
+  the OG image route (`/api/og/list/[slug]`) that already exists:
+  - **Works via a plain intent URL (true one-click):** WhatsApp (`wa.me/?text=`), Telegram
+    (`t.me/share/url?url=&text=`), X (`twitter.com/intent/tweet`), Facebook (`sharer.php?u=`),
+    plus **Copy link**.
+  - **Mobile:** keep `navigator.share()` as the lead affordance — the OS sheet natively surfaces
+    Instagram/WhatsApp/Telegram; the explicit icon row is the desktop path + fallback.
+  - **Instagram is the honest exception.** IG has **no web share URL**, and the Stories deep link
+    (`instagram-stories://share`) requires a native app with a registered FB App ID — it cannot
+    work from mobile web. Web-realistic answer: **"Save list image"** (download the existing OG
+    card) + copy link, and let them post it. True one-click IG-story lands with the **mobile app**,
+    not here. Do not promise it on web.
+  - Mount on the list page first (the shareable growth surface), then product + profile. Copy stays
+    calm; no growth-hacky "Share to unlock" nonsense.
+  - Self-contained: depends on nothing in P2–P7 and blocks nothing. Needs a small PART-C design
+    pass (the share affordance is a real UI moment). **Strong candidate to pull early** — it's the
+    growth loop and it's cheap.
+
+**Suggested sequence:** P1 → P2 → P3 (+ P4) → P5 → P6 → P7, with **P8 parallelizable at any point**
+(pull it forward whenever distribution matters more than depth). P6 can also slot earlier if
+discovery needs to feel fuller sooner, but it's gated on the OFF/legal posture above.
 
 ## 2b. Design workflow (spec PART C) — applies to every P-series UI order
 Standing process now baked into P3/P4/P5 + list detail + the Discover/nav work:
