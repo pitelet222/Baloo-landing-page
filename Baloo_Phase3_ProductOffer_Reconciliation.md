@@ -85,16 +85,22 @@ Sequenced; one order per session, plan-first, commit per order (same rhythm as G
   Instagram / Telegram / WhatsApp in one click. Today `components/lists/ShareButton.tsx` only does
   native-share-or-copy-link. Upgrade it to a **share menu with explicit per-app targets**, reusing
   the OG image route (`/api/og/list/[slug]`) that already exists:
-  - **Works via a plain intent URL (true one-click):** WhatsApp (`wa.me/?text=`), Telegram
-    (`t.me/share/url?url=&text=`), X (`twitter.com/intent/tweet`), Facebook (`sharer.php?u=`),
-    plus **Copy link**.
-  - **Mobile:** keep `navigator.share()` as the lead affordance — the OS sheet natively surfaces
-    Instagram/WhatsApp/Telegram; the explicit icon row is the desktop path + fallback.
-  - **Instagram is the honest exception.** IG has **no web share URL**, and the Stories deep link
-    (`instagram-stories://share`) requires a native app with a registered FB App ID — it cannot
-    work from mobile web. Web-realistic answer: **"Save list image"** (download the existing OG
-    card) + copy link, and let them post it. True one-click IG-story lands with the **mobile app**,
-    not here. Do not promise it on web.
+  - **Mobile — share the IMAGE, not just the link (the lead affordance).** Fetch the generated OG
+    card as a blob → `navigator.share({ files: [new File([blob], 'list.png', {type:'image/png'})],
+    text, url })`, feature-detected with `navigator.canShare({ files })`. The OS sheet opens **with
+    Instagram in it**, carrying the actual list card — tap IG → Story → posted. ~2 taps, iOS
+    Safari 15+ / Android Chrome. This is the real Instagram answer on web; do NOT settle for a
+    bare "download the image".
+  - **Desktop / fallback — plain intent URLs (true one-click):** WhatsApp (`wa.me/?text=`),
+    Telegram (`t.me/share/url?url=&text=`), X (`twitter.com/intent/tweet`), Facebook
+    (`sharer.php?u=`), plus **Copy link** and **Save image**. No SDKs, no keys, no auth.
+  - **Instagram's hard edge (state this plainly, don't promise around it).** IG has no web share
+    URL, and true one-tap-into-the-Stories-composer needs Meta's **Sharing-to-Stories SDK** — a
+    NATIVE capability: it writes the image to the OS pasteboard/intent under Meta's keys
+    (`com.instagram.sharedSticker.backgroundImage`) and requires a registered Facebook App ID. A
+    browser cannot do this at any price. Web tops out at the `navigator.share({files})` flow above.
+    **True one-tap IG Stories is a MOBILE-APP feature → see M1 in the backlog.** It is a genuinely
+    strong reason to build the app, not a gap to paper over.
   - Mount on the list page first (the shareable growth surface), then product + profile. Copy stays
     calm; no growth-hacky "Share to unlock" nonsense.
   - Self-contained: depends on nothing in P2–P7 and blocks nothing. Needs a small PART-C design
@@ -149,3 +155,18 @@ tags only)."*
 ## 5. Backlog (noted, not now)
 Shopping-list conversion · availability/locality signals · category taxonomy landing pages (spec
 `category` col readies this) · OFF-for-B2B (post-legal) · affiliate layer · price snapshots.
+
+### M1 — True one-tap "Share list to Instagram Stories" (MOBILE APP)
+**Jitain's ask, done properly — and a headline reason to build the app.** Meta's
+**Sharing-to-Stories SDK** drops the list card straight into the IG Stories composer as the
+background, one tap, no sheet. Native-only by construction:
+- **Needs:** a native iOS/Android app (or React Native/Expo with a native module), a registered
+  **Facebook App ID**, and IG installed. iOS: `instagram-stories://share?source_application=<appId>`
+  + the image written to `UIPasteboard` under `com.instagram.sharedSticker.backgroundImage`.
+  Android: the `com.instagram.share.ADD_TO_STORY` intent with the image URI + `source_application`.
+- **We already have the hard part:** the list card image is generated server-side today
+  (`/api/og/list/[slug]`) — the app just fetches that PNG and hands it to the SDK.
+- **Also unlocks:** sticker + attribution link back to `/list/[slug]` (the growth loop closes:
+  Story → tap → the list → sign up).
+- **Web can never do this** (see P8). The gap between P8's ~2-tap web flow and M1's true one-tap is
+  a real, demonstrable argument for the mobile app — worth showing Jitain side by side.
