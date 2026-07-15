@@ -13,6 +13,7 @@ import {
   upsertProductByCanonicalKey,
 } from "../lib/db/queries/products";
 import { upsertProfile } from "../lib/db/queries/profiles";
+import { canonicalKey } from "../lib/canonical";
 import { addListItem, createList, getListBySlug, reorderListItems } from "../lib/db/queries/lists";
 
 // Migration 0002 ties profiles to auth.users, so the seed profile needs a REAL auth user —
@@ -59,19 +60,27 @@ async function main() {
   });
   console.log("profile:", profile.handle, profile.id);
 
-  // 2 · canonical product + DEDUP PROOF: same canonical_key twice must converge on one row
+  // 2 · canonical product + DEDUP PROOF: same canonical_key twice must converge on one row.
+  //
+  // The key MUST come from canonicalKey() — the same function ingestion uses. Hand-written keys
+  // (this file used to say "oatly:barista-edition:1l") make seeded rows invisible to the identity
+  // short-circuit in /api/extract, so a real scan of the same product would create a DUPLICATE
+  // row instead of resolving to this one. Computed once from the canonical name and reused for
+  // both upserts, so the dedup proof still proves dedup (same key, improved name).
+  const OATLY_NAME = "Oatly Oat Drink Barista Edition Long Life";
+  const OATLY_KEY = canonicalKey({ name: OATLY_NAME });
   const first = await upsertProductByCanonicalKey(dbi, {
-    canonicalKey: "oatly:barista-edition:1l",
+    canonicalKey: OATLY_KEY,
     slug: "oatly-oat-drink-barista-edition",
-    name: "Oatly Oat Drink Barista Edition",
+    name: "Oatly Oat Drink Barista Edition", // first scan's name
     brand: "Oatly",
     retailer: "Ocado",
     source: "user_scan",
   });
   const second = await upsertProductByCanonicalKey(dbi, {
-    canonicalKey: "oatly:barista-edition:1l",
+    canonicalKey: OATLY_KEY,
     slug: "oatly-oat-drink-barista-edition",
-    name: "Oatly Oat Drink Barista Edition Long Life", // improved name on re-scan
+    name: OATLY_NAME, // improved name on re-scan — same identity, refreshed description
     brand: "Oatly",
     source: "user_scan",
   });
@@ -108,11 +117,12 @@ async function main() {
     console.log("ingredient profile v1 already present (idempotent re-run)");
   }
 
-  // 4 · a second product so the list holds two
+  // 4 · a second product so the list holds two (key computed, per the note above)
+  const PRINGLES_NAME = "Pringles Original";
   const crisps = await upsertProductByCanonicalKey(dbi, {
-    canonicalKey: "pringles:original:200g",
+    canonicalKey: canonicalKey({ name: PRINGLES_NAME }),
     slug: "pringles-original",
-    name: "Pringles Original",
+    name: PRINGLES_NAME,
     brand: "Pringles",
     source: "user_scan",
   });
