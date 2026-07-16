@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Browser__read_page",
+      "mcp__Claude_Browser__get_page_text",
+      "mcp__Claude_Browser__read_console_messages",
+      "mcp__Claude_Browser__read_network_requests",
+      "mcp__Claude_Browser__preview_logs",
+      "mcp__Claude_Browser__preview_list",
+      "mcp__Claude_Browser__find",
+      "mcp__Claude_Browser__tabs_context",
+      "mcp__3a674b27-cbb9-4d4e-a184-c08e1e179d27__get_advisors",
+      "mcp__3a674b27-cbb9-4d4e-a184-c08e1e179d27__list_tables",
+      "mcp__3a674b27-cbb9-4d4e-a184-c08e1e179d27__list_projects",
+      "mcp__3a674b27-cbb9-4d4e-a184-c08e1e179d27__list_migrations",
+      "mcp__3a674b27-cbb9-4d4e-a184-c08e1e179d27__list_extensions",
+      "mcp__1a1bd416-ff1e-46f3-bb45-9d41fbd223ec__notion-fetch",
+      "mcp__1a1bd416-ff1e-46f3-bb45-9d41fbd223ec__notion-search"
+    ]
+  }
+}
