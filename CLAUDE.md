@@ -59,7 +59,8 @@ root files; blank skeletons to reset or seed new ones are in `docs/templates/`.
 - Ingredient profiles are versioned, never deleted (`is_active` flags the current one).
 - RLS is defence-in-depth for client access paths (`drizzle/0001_rls.sql`); server-side Drizzle
   bypasses it — API routes enforce auth in code (G2 `requireUser`).
-- Full model + build orders: `Baloo_Phase3_Full_Build_Guide.md`.
+- Canonical plan: `Baloo_Phase3_Build_Orders.md` (spec) + `Baloo_Phase3_ProductOffer_Reconciliation.md`
+  (current plan). Historical docs (full guide, old design handoffs, benchmark) live in `docs/archive/`.
 
 ## Nutrition rules (Phase 2 — B1–B4)
 - Extraction (B1) captures the nutrition panel verbatim — values exactly as printed, never

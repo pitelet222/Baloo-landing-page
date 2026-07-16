@@ -9,3 +9,8 @@ out
 .vercel
 next-env.d.ts
 *.tsbuildinfo
+
+# Installed agent-skill CONTENT (reproducible from skills-lock.json, like node_modules).
+# The manifest (skills-lock.json) IS committed so the install stays reproducible.
+.agents/
+.claude/skills/

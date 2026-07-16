@@ -59,7 +59,7 @@ npx vercel --prod     # deploy
 
 Add caching from **Vercel → Storage/Marketplace → Upstash Redis** (Vercel KV is retired); it injects
 the Upstash env vars automatically. Connect **baloo.life** under the project's Domains once it passes
-the checklist in `Baloo_LandingPage_Playbook.md`.
+the launch checks in `Baloo_Checklist.md`.
 
 ## Notes
 - Pinned to the AI SDK v4 line; see `CLAUDE.md` if you upgrade.
