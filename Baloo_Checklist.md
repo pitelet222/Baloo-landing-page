@@ -5,14 +5,26 @@
 > `Baloo_Phase3_ProductOffer_Reconciliation.md` (the plan) and `Baloo_Phase3_Build_Orders.md` (the spec).
 >
 > **Owners:** **M** = Miquel · **J** = Jitain · **CC** = Claude Code · **CD** = Claude Design
-> **Last updated:** after `f14d4d3` (seed canonical-key fix)
+> **Last updated:** after `58ad98a` (org pass) — **launch pivot: see `Baloo_Launch_Plan.md`**
 
-## 🔴 Blocker — everything visual waits on this
-- [ ] **Pick the design direction: V1 / V2 / V3** (or a blend) — Figma Make prototype, `npm run dev` in the export, switcher in the header — **M/J**
-  - V1 = left-sidebar app shell · V2 = editorial top-nav (≈ shipped today) · V3 = warm boutique (cream + Playfair)
-  - Blocks: P5, P7, and the visual port. Does **not** block P3, P4, P6, P8.
+## 🚀 Launch track (beta) — the new top priority
+> Jitain wants a beta out **soon**. Full ordering + locked decisions in `Baloo_Launch_Plan.md`.
+> ✅ **Design direction chosen: V3** (warm boutique) — the old blocker is resolved.
 
-## Phase 3 — Product/Offer (P-series)
+**Tier A — beta-blocking:**
+- [ ] **L1 — V3 design port** (starts with Mobbin refs + app shell; PART C ritual; design the dual-intent search box) — **CC/CD/M**
+- [ ] **L4 — Seed supply**: official accounts (@baloo/@balooteam/@proteinpicks/@kidslunchbox) + genuinely good starter lists — **M/CC**
+- [ ] **L5c — Visibility auto-public**: profile public only when ≥1 public list, else private — **CC**
+- [ ] **L2 — Social sharing** (= P8, pulled forward): IG card via `navigator.share` + WhatsApp/Telegram/FB intents + sharing-card template — **CC**
+
+**Tier B — fast-follow (days after beta):**
+- [ ] **L3 — AI semantic search over public lists** (search-as-homepage; pgvector vs LLM-rerank TBD) — **CC**
+- [ ] **L6 — Save-only reconciliation** (remove list Upvote, Popular = saves) + scanned-product organisation (favourite / add-to-multiple-lists) — **CC** *(needs J's confirm)*
+- [ ] **L5a/b — Identity**: `baloo.life/@username` URL + username change with permanent redirect — **CC**
+
+**Decisions still owed from Jitain** (in `Baloo_Launch_Plan.md`): Upvote→Save removal · comments/feed/moderation at launch · semantic-search infra · `/@username` URL cutover timing.
+
+## Phase 3 — Product/Offer (P-series)  *(Tier C / interleaves after beta)*
 
 **Shipped:** ✅ **P1** (offers table, `analysis_status`, pg_trgm) · ✅ **P2** (pipeline lib, background
 analyse engine, identity short-circuit, offers RLS, and the `maxTokens` prod-bug fix)
