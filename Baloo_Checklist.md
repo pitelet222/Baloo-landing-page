@@ -17,12 +17,42 @@
 - [ ] **L5c — Visibility auto-public**: profile public only when ≥1 public list, else private — **CC**
 - [ ] **L2 — Social sharing** (= P8, pulled forward): IG card via `navigator.share` + WhatsApp/Telegram/FB intents + sharing-card template — **CC**
 
+**Tier A — security (17 July audit; a beta with real users needs these):**
+> Auth verdict: **we already use a third-party provider — Supabase Auth.** Not rolling our own; no
+> migration to Clerk/Auth0 (it would split auth from our Postgres and break `auth.uid()` RLS). The
+> work is hardening, not migrating. Full reasoning in the Notion hub.
+- [ ] **S1 — Rate-limit the expensive routes** (`@upstash/ratelimit`; Upstash already installed):
+      `/api/analyze`, `/api/extract`, `/api/explain`, `/api/nutrition-context`. Today they are
+      **unauthenticated and unlimited**, and each call costs Firecrawl + Claude money — a for-loop
+      is a *financial* DoS. *Biggest money risk.* — **CC**
+- [ ] **S2 — Bot wall on account creation**: Turnstile captcha on signup + anonymous sign-in
+      (Supabase Auth supports it natively), and **guests may read/analyse but not publish**
+      (`requireVerifiedUser()` beside `requireUser()`). Today `signInAnonymously()` + no
+      `is_anonymous` check on any write = **one HTTP call per bot user, unlimited lists**. — **CC**
+- [ ] **S3 — Custom SMTP** (Resend; Loops stays marketing) + SPF/DKIM/DMARC on baloo.life.
+      Supabase's built-in mailer is dev-only + rate-limited → **confirmation emails silently stop
+      arriving at launch**. — **M/CC**
+- [ ] **S4 — Write rate limits + volume caps** (lists/day, items/list, comments/min, follows/min) — **CC**
+- [ ] **S5 — Quick wins**: security headers (CSP/HSTS/X-Frame-Options) in `next.config` · Vercel WAF
+      + Attack Challenge Mode · leaked-password protection (the open advisor WARN) · zod on every
+      API body — **CC/M**
+- [ ] **S6 — Error monitoring** (Sentry) — "stable from the get-go" = knowing prod broke first — **CC**
+- [ ] **S7 — "Dar de baja"**: email unsubscribe (GDPR + Gmail/Yahoo one-click header) **and**
+      account deletion (right to erasure — **we have no delete flow at all**; EU launch) — **CC**
+- [ ] **S8 — Privacy policy + terms** on baloo.life *(no cookie banner needed while analytics-free)* — **J**
+
 **Tier B — fast-follow (days after beta):**
+- [ ] **N1 — In-app notifications** — a bell + unread count over the existing `activity` table (G6) — **CC**
+- [ ] **N2 — Email notifications** *(needs S3)* — same events, **digest-batched**, prefs + opt-out;
+      default digest-only, never per-event blasting — **CC**
 - [ ] **L3 — AI semantic search over public lists** (search-as-homepage; pgvector vs LLM-rerank TBD) — **CC**
 - [ ] **L6 — Save-only reconciliation** (remove list Upvote, Popular = saves) + scanned-product organisation (favourite / add-to-multiple-lists) — **CC** *(needs J's confirm)*
 - [ ] **L5a/b — Identity**: `baloo.life/@username` URL + username change with permanent redirect — **CC**
 
-**Decisions still owed from Jitain** (in `Baloo_Launch_Plan.md`): Upvote→Save removal · comments/feed/moderation at launch · semantic-search infra · `/@username` URL cutover timing.
+**Decisions still owed from Jitain** (in `Baloo_Launch_Plan.md`): Upvote→Save removal · comments/feed/moderation
+at launch · semantic-search infra · `/@username` URL cutover timing · keep guest mode (rec: yes, but
+guests can't publish) · email default (rec: digest-only) · deleted accounts — keep public lists with the
+curator anonymised (rec) or delete · who owns privacy policy + terms.
 
 ## Phase 3 — Product/Offer (P-series)  *(Tier C / interleaves after beta)*
 

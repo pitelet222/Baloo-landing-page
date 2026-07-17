@@ -42,7 +42,34 @@ where they overlap, **this ordering wins for launch**. Working board: the `Baloo
   / Telegram / Facebook intent URLs + the sharing-card template (the OG image at `/api/og/list/[slug]`
   already exists). Jitain's #1 ASAP; the growth loop.
 
+### Tier A — security (added 17 July, from Jitain's questions + a code audit)
+**Auth is settled: we already use a third-party provider — Supabase Auth** (GoTrue), the same
+category as Clerk. We never store or see passwords. Jitain's instinct that Clerk is B2B-shaped is
+right, but the answer isn't another third party: our `profiles.id` is a FK to `auth.users.id` and
+every RLS policy uses `auth.uid()`, which only works while auth lives in our own Postgres. Clerk/Auth0
+would split them → sync webhooks + broken RLS + more cost, for no user-visible gain. **Harden, don't
+migrate.** (Add Apple sign-in later — a checkbox.)
+
+Three holes the audit found in shipped code:
+- **Anonymous sign-in = free bot users.** `signInAnonymously()` is on and no write route checks
+  `is_anonymous`: one HTTP call per user, no email, no captcha → unlimited users and lists.
+- **`/api/analyze` + `/api/extract` are unauthenticated and unlimited**, and each call costs
+  Firecrawl + Claude money. A for-loop is a financial DoS.
+- **No custom SMTP.** Supabase's built-in mailer is dev-only and rate-limited — confirmation emails
+  would silently stop arriving at launch.
+
+- **S1 — rate-limit the expensive routes** (`@upstash/ratelimit`; Upstash already installed).
+- **S2 — bot wall**: Turnstile captcha on signup + anonymous; guests read/analyse but cannot publish
+  (`requireVerifiedUser()`), keeping the try-before-signup funnel.
+- **S3 — custom SMTP** (Resend) + SPF/DKIM/DMARC. *Signup breaks at launch without it.*
+- **S4** write rate limits/caps · **S5** security headers + Vercel WAF + leaked-password toggle + zod
+  · **S6** error monitoring (Sentry) · **S7** unsubscribe **and** account deletion (GDPR; no delete
+  flow exists) · **S8** privacy policy + terms (**J**).
+
 ### Tier B — high-value fast-follow (can ship days after beta)
+- **N1/N2 — Notifications.** In-app first (a bell over the existing `activity` table from G6), then
+  **digest-batched** email once S3 lands — per-event email trains people to mute us, and a calm brand
+  shouldn't blast. Default digest-only; prefs + one-click unsubscribe (S7).
 - **L3 — AI semantic search over public lists.** The search-as-homepage bet; the single biggest
   community lever. Approach decided at plan time (pgvector embeddings on Supabase vs LLM-rerank over
   pg_trgm candidates). Semantic, not keyword — "cereals my 5-year-old can eat" must match
