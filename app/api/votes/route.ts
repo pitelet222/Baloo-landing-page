@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { toggleVote, type VotableType } from "@/lib/db/queries/votes";
 import { recordActivity } from "@/lib/db/queries/activity";
@@ -9,7 +9,7 @@ const VOTABLE: VotableType[] = ["product", "list", "comment"];
 // Upvote toggle (Order G7). Single direction — there is no downvote, by design. An upvote is
 // feed-worthy (voted activity row); removing one isn't (history is history).
 export async function POST(req: Request) {
-  const gate = await requireUser();
+  const gate = await requireVerifiedUser();
   if ("error" in gate) return gate.error;
   const dbi = db();
   if (!dbi) return NextResponse.json({ error: "db_not_configured" }, { status: 503 });

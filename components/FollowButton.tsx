@@ -5,8 +5,7 @@
 // theatre for a reversible action.
 
 import { useState } from "react";
-import { useAuth } from "@/components/auth/useAuth";
-import { AuthModal } from "@/components/auth/AuthModal";
+import { useAuthGate } from "@/components/auth/useAuthGate";
 
 export function FollowButton({
   profileId,
@@ -19,16 +18,15 @@ export function FollowButton({
   ghost?: boolean; // empty-state suggested-curator rows use the ghost treatment
   onChange?: (following: boolean) => void;
 }) {
-  const { available, user, refresh } = useAuth();
+  const { available, user, ensureVerified, promptUpgrade, modal } = useAuthGate();
   const [following, setFollowing] = useState(initialFollowing);
   const [hover, setHover] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [authOpen, setAuthOpen] = useState(false);
 
   if (!available || user?.id === profileId) return null;
 
   async function toggle() {
-    if (!user) return setAuthOpen(true);
+    if (!ensureVerified()) return; // signed out → sign in; guest → upgrade prompt
     if (busy) return;
     setBusy(true);
     const next = !following;
@@ -41,8 +39,10 @@ export function FollowButton({
             body: JSON.stringify({ followingId: profileId }),
           })
         : await fetch(`/api/follows?followingId=${profileId}`, { method: "DELETE" });
-      if (!res.ok) setFollowing(!next); // revert on failure
-      else onChange?.(next);
+      if (!res.ok) {
+        setFollowing(!next); // revert on failure
+        if (res.status === 403) promptUpgrade(); // guest tried to follow
+      } else onChange?.(next);
     } catch {
       setFollowing(!next);
     } finally {
@@ -68,16 +68,7 @@ export function FollowButton({
       >
         {following ? (hover ? "Unfollow" : "Following") : "Follow"}
       </button>
-      {authOpen && (
-        <AuthModal
-          mode="signin"
-          onClose={() => setAuthOpen(false)}
-          onDone={() => {
-            setAuthOpen(false);
-            refresh();
-          }}
-        />
-      )}
+      {modal}
     </>
   );
 }

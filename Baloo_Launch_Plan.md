@@ -58,9 +58,11 @@ Three holes the audit found in shipped code:
 - **No custom SMTP.** Supabase's built-in mailer is dev-only and rate-limited — confirmation emails
   would silently stop arriving at launch.
 
-- **S1 — rate-limit the expensive routes** (`@upstash/ratelimit`; Upstash already installed).
-- **S2 — bot wall**: Turnstile captcha on signup + anonymous; guests read/analyse but cannot publish
-  (`requireVerifiedUser()`), keeping the try-before-signup funnel.
+- **S1 — rate-limit the expensive routes** ✅ shipped `9eaf514` (fail-open; inert until the Upstash
+  REST vars are set on Vercel — the one remaining ops step for S1).
+- **S2 — guest-publish wall** ✅ shipped (code): `requireVerifiedUser()` on every community write;
+  guests analyse-only; `useAuthGate()` on the client. **Captcha deferred** (Turnstile — needs your
+  Cloudflare + Supabase setup). Note: anonymous sign-in is currently disabled on the Supabase project.
 - **S3 — custom SMTP** (Resend) + SPF/DKIM/DMARC. *Signup breaks at launch without it.*
 - **S4** write rate limits/caps · **S5** security headers + Vercel WAF + leaked-password toggle + zod
   · **S6** error monitoring (Sentry) · **S7** unsubscribe **and** account deletion (GDPR; no delete

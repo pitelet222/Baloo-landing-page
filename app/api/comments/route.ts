@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUser, getSessionUser } from "@/lib/auth";
+import { requireUser, requireVerifiedUser, getSessionUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { addComment, deleteOwnComment, getThread, type ThreadSort } from "@/lib/db/queries/comments";
 import { recordActivity } from "@/lib/db/queries/activity";
@@ -20,7 +20,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const gate = await requireUser();
+  const gate = await requireVerifiedUser();
   if ("error" in gate) return gate.error;
   const dbi = db();
   if (!dbi) return NextResponse.json({ error: "db_not_configured" }, { status: 503 });

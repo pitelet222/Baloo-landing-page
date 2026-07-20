@@ -27,6 +27,22 @@ export async function requireUser(): Promise<{ user: User } | { error: NextRespo
   return { user };
 }
 
+// The publish/social gate (Order S2): a REAL account — signed in AND not an anonymous guest.
+// Guests may browse + analyse, but every community write (lists, comments, follows, votes,
+// saves, reports) goes through here so a one-request anonymous sign-in can't publish or fake
+// social numbers. Usage mirrors requireUser:
+//   const gate = await requireVerifiedUser();
+//   if ("error" in gate) return gate.error;
+export async function requireVerifiedUser(): Promise<{ user: User } | { error: NextResponse }> {
+  const gate = await requireUser();
+  if ("error" in gate) return gate; // 401 — not signed in at all
+  if (gate.user.is_anonymous) {
+    // Signed in, but only as a guest. 403 tells the client to prompt an upgrade to a real account.
+    return { error: NextResponse.json({ error: "verify_required" }, { status: 403 }) };
+  }
+  return gate;
+}
+
 // The signed-in user's public profile row, or null (signed out, DB unconfigured, or the
 // handle-setup step hasn't happened yet — /welcome handles that case).
 export async function getCurrentProfile(): Promise<{ user: User; profile: Profile | null } | null> {

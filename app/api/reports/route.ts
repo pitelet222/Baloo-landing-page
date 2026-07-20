@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { createReport } from "@/lib/db/queries/reports";
 import { getListById } from "@/lib/db/queries/lists";
@@ -12,7 +12,7 @@ const REASONS = new Set(["spam", "abuse", "off_topic", "other"]);
 
 // Flag a comment or list (Order G9). Requires auth; dedups an existing open report.
 export async function POST(req: Request) {
-  const gate = await requireUser();
+  const gate = await requireVerifiedUser();
   if ("error" in gate) return gate.error;
   const dbi = db();
   if (!dbi) return NextResponse.json({ error: "db_not_configured" }, { status: 503 });

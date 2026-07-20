@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/auth";
+import { requireUser, requireVerifiedUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getProfileById } from "@/lib/db/queries/profiles";
 import { createList, getListsByOwnerWithCounts } from "@/lib/db/queries/lists";
@@ -16,7 +16,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const gate = await requireUser();
+  const gate = await requireVerifiedUser();
   if ("error" in gate) return gate.error;
   const dbi = db();
   if (!dbi) return NextResponse.json({ error: "db_not_configured" }, { status: 503 });

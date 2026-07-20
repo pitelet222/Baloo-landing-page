@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useAuth } from "@/components/auth/useAuth";
-import { AuthModal } from "@/components/auth/AuthModal";
+import { useAuthGate } from "@/components/auth/useAuthGate";
 
 type MyList = { id: string; slug: string; title: string; isPublic: boolean; itemCount: number };
 
@@ -10,9 +9,8 @@ type MyList = { id: string; slug: string; title: string; isPublic: boolean; item
 // popover of your lists (add with one tap) plus inline "new list". Renders nothing until Supabase
 // is configured.
 export function AddToList({ productId }: { productId: string }) {
-  const { available, user, profile, refresh } = useAuth();
+  const { available, user, profile, ensureVerified, promptUpgrade, modal } = useAuthGate();
   const [open, setOpen] = useState(false);
-  const [authOpen, setAuthOpen] = useState(false);
   const [lists, setLists] = useState<MyList[] | null>(null);
   const [added, setAdded] = useState<Set<string>>(new Set());
   const [newTitle, setNewTitle] = useState("");
@@ -47,7 +45,7 @@ export function AddToList({ productId }: { productId: string }) {
   }
 
   async function openPicker() {
-    if (!user) return setAuthOpen(true);
+    if (!ensureVerified()) return; // signed out → sign in; guest → upgrade prompt
     if (!profile) {
       window.location.href = "/welcome";
       return;
@@ -56,13 +54,29 @@ export function AddToList({ productId }: { productId: string }) {
     loadLists();
   }
 
+  function unmark(listId: string) {
+    setAdded((s) => {
+      const n = new Set(s);
+      n.delete(listId);
+      return n;
+    });
+  }
+
   async function add(listId: string) {
-    setAdded((s) => new Set(s).add(listId));
-    await fetch(`/api/lists/${listId}/items`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ productId }),
-    }).catch(() => {});
+    setAdded((s) => new Set(s).add(listId)); // optimistic
+    try {
+      const res = await fetch(`/api/lists/${listId}/items`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId }),
+      });
+      if (!res.ok) {
+        unmark(listId);
+        if (res.status === 403) promptUpgrade();
+      }
+    } catch {
+      unmark(listId);
+    }
   }
 
   async function createAndAdd() {
@@ -74,11 +88,13 @@ export function AddToList({ productId }: { productId: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: newTitle }),
       });
-      const data = await res.json();
       if (res.ok) {
+        const data = await res.json();
         await add(data.list.id);
         setNewTitle("");
         await loadLists();
+      } else if (res.status === 403) {
+        promptUpgrade();
       }
     } finally {
       setBusy(false);
@@ -150,16 +166,7 @@ export function AddToList({ productId }: { productId: string }) {
         </div>
       )}
 
-      {authOpen && (
-        <AuthModal
-          mode="signin"
-          onClose={() => setAuthOpen(false)}
-          onDone={() => {
-            setAuthOpen(false);
-            refresh();
-          }}
-        />
-      )}
+      {modal}
     </div>
   );
 }

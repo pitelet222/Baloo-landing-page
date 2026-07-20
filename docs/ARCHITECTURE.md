@@ -144,14 +144,22 @@ passwords. Clients: `lib/supabase/client.ts` (browser) + `lib/supabase/server.ts
 `@supabase/ssr`). Methods shipped: email+password (with confirmation), Google OAuth, and anonymous
 ("guest") sign-in with an upgrade path.
 
-**Server gates** (`lib/auth.ts`): `getSessionUser()` · `requireUser()` → 401 · `requireAdmin()`
-(checks `profiles.is_admin`) → 403 · `getCurrentProfile()`. **Reads are public; writes call
-`requireUser()`.** Because server Drizzle bypasses RLS, these code checks — not RLS — are the real
-enforcement on API paths.
+**Server gates** (`lib/auth.ts`): `getSessionUser()` · `requireUser()` → 401 (any signed-in, incl.
+guest) · **`requireVerifiedUser()` → 403 `verify_required`** (a real, non-anonymous account) ·
+`requireAdmin()` → 403 · `getCurrentProfile()`. **Reads are public.** Writes split (Order S2, the
+*guests analyse-only* rule): the paste-flow analysis is open; every **community write** (lists,
+comments, follows, votes, saves, reports, `products/analyze`) requires `requireVerifiedUser()`; a
+user's own delete/toggle-off stays `requireUser()`. Client controls call `useAuthGate()` to prompt
+sign-in (401) or upgrade (403). Because server Drizzle bypasses RLS, these code checks — not RLS —
+are the real enforcement.
 
-> **Hardening in flight (S-series, see `Baloo_Launch_Plan.md`):** rate-limiting the paid routes,
-> a captcha + "guests can't publish" wall on account creation, and custom SMTP. Update this section
-> as each lands (e.g. when a `requireVerifiedUser()` gate is added beside `requireUser()`).
+**Rate limiting** (Order S1, `lib/ratelimit.ts`): sliding-window limits on the paid routes —
+extract/analyze/nutrition-context by IP, explain/products-analyze by user — returning a friendly 429.
+Optional-infra (fail-open without Upstash), so **inert until `UPSTASH_REDIS_REST_URL/TOKEN` are set**.
+
+> **Still planned (S-series, `Baloo_Launch_Plan.md`):** captcha/Turnstile (deferred — Cloudflare +
+> Supabase setup), write volume caps (S4), security headers + WAF (S5), monitoring (S6), account
+> deletion + unsubscribe (S7).
 
 ---
 

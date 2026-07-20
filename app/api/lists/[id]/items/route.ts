@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { User } from "@supabase/supabase-js";
-import { requireUser } from "@/lib/auth";
+import { requireVerifiedUser } from "@/lib/auth";
 import { db, type Db } from "@/lib/db";
 import {
   addListItem,
@@ -17,7 +17,7 @@ type Params = { params: Promise<{ id: string }> };
 async function guard(
   params: Params["params"],
 ): Promise<{ dbi: Db; listId: string; user: User } | { error: NextResponse }> {
-  const gate = await requireUser();
+  const gate = await requireVerifiedUser();
   if ("error" in gate) return { error: gate.error };
   const dbi = db();
   if (!dbi) return { error: NextResponse.json({ error: "db_not_configured" }, { status: 503 }) };

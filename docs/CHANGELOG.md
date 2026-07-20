@@ -6,6 +6,12 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **Security S1 — rate limiting:** `lib/ratelimit.ts` (sliding-window, Upstash, fail-open) on the
+  paid routes — extract/analyze/nutrition-context by IP, explain/products-analyze by user — with a
+  friendly 429. Inert until the Upstash REST vars are set. (`9eaf514`)
+- **Security S2 — guest-publish wall:** `requireVerifiedUser()` — guests may analyse but every
+  community write (lists/comments/follows/votes/saves/reports) needs a real account; client controls
+  get a shared `useAuthGate()` that prompts sign-in/upgrade. Captcha deferred.
 - **Docs:** rewrote the README for the current (Phase 3) product; added this changelog and
   `ARCHITECTURE.md` as the living technical reference.
 - **Security plan (S-series):** audited shipped auth; recorded the hardening plan (rate limits,

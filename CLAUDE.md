@@ -119,11 +119,17 @@ over judgment." (in lib/prompts.ts)
 - Auth provider is **Supabase Auth (GoTrue)** — a managed third party; we never store or hash
   passwords. `profiles.id` is a FK to `auth.users.id` and RLS uses `auth.uid()`, so auth MUST stay in
   our Postgres — do NOT propose migrating to Clerk/Auth0 (it splits auth from data and breaks RLS).
-- Gates in `lib/auth.ts`: reads are public; every mutating route opens with `requireUser()` (401) or
-  `requireAdmin()` (403). Server Drizzle bypasses RLS, so these code checks are the real enforcement.
-- Hardening is PLANNED, not yet built (S-series in `Baloo_Launch_Plan.md`): rate-limit the paid
-  routes, captcha + "guests can't publish", custom SMTP, account deletion. Anonymous sign-in is
-  currently open — flag it, don't rely on it being safe.
+- Gates in `lib/auth.ts`: reads are public; `requireUser()` (401) = any signed-in incl. guest;
+  `requireVerifiedUser()` (403 `verify_required`) = a REAL account (not anonymous) — the **guests
+  analyse-only** wall (S2), on every community write (lists/comments/follows/votes/saves/reports);
+  `requireAdmin()` (403) = moderation. Server Drizzle bypasses RLS, so these code checks are the real
+  enforcement. Client controls use `useAuthGate()` to prompt sign-in/upgrade on 401/403.
+- Rate limiting (S1, `lib/ratelimit.ts`) guards the paid routes (extract/analyze/nutrition-context by
+  IP; explain/products-analyze by user). Optional-infra: no-op (fail-open) without Upstash — so it is
+  INERT until `UPSTASH_REDIS_REST_URL/TOKEN` are set (empty locally; unset on Vercel).
+- Still PLANNED (S-series, `Baloo_Launch_Plan.md`): captcha/Turnstile (deferred — needs Cloudflare +
+  Supabase setup), write volume caps (S4), security headers + WAF (S5), Sentry (S6), account deletion
+  + unsubscribe (S7).
 
 ## Scope
 - **Graduated IN (built):** accounts/login, saved lists + saves, the nutrition-panel context, and

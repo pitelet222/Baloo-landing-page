@@ -4,8 +4,7 @@
 // state system as the upvote — never colour-coded.
 
 import { useState } from "react";
-import { useAuth } from "@/components/auth/useAuth";
-import { AuthModal } from "@/components/auth/AuthModal";
+import { useAuthGate } from "@/components/auth/useAuthGate";
 
 export function SavePill({
   listId,
@@ -14,15 +13,14 @@ export function SavePill({
   listId: string;
   initialSaved: boolean;
 }) {
-  const { available, user, refresh } = useAuth();
+  const { available, ensureVerified, promptUpgrade, modal } = useAuthGate();
   const [saved, setSaved] = useState(initialSaved);
   const [busy, setBusy] = useState(false);
-  const [authOpen, setAuthOpen] = useState(false);
 
   if (!available) return null;
 
   async function toggle() {
-    if (!user) return setAuthOpen(true);
+    if (!ensureVerified()) return; // signed out → sign in; guest → upgrade prompt
     if (busy) return;
     setBusy(true);
     const next = !saved;
@@ -35,7 +33,10 @@ export function SavePill({
             body: JSON.stringify({ listId }),
           })
         : await fetch(`/api/saves?listId=${listId}`, { method: "DELETE" });
-      if (!res.ok) setSaved(!next);
+      if (!res.ok) {
+        setSaved(!next);
+        if (res.status === 403) promptUpgrade(); // guest tried to save (feeds "Saved by N")
+      }
     } catch {
       setSaved(!next);
     } finally {
@@ -69,16 +70,7 @@ export function SavePill({
         </svg>
         {saved ? "Saved" : "Save"}
       </button>
-      {authOpen && (
-        <AuthModal
-          mode="signin"
-          onClose={() => setAuthOpen(false)}
-          onDone={() => {
-            setAuthOpen(false);
-            refresh();
-          }}
-        />
-      )}
+      {modal}
     </>
   );
 }

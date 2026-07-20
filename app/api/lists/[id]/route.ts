@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/auth";
+import { requireUser, requireVerifiedUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { deleteList, getListById, updateList } from "@/lib/db/queries/lists";
 
@@ -7,7 +7,7 @@ type Params = { params: Promise<{ id: string }> };
 
 // PATCH list fields (title/description/isPublic/coverUrl). DELETE the list.
 export async function PATCH(req: Request, { params }: Params) {
-  const gate = await requireUser();
+  const gate = await requireVerifiedUser();
   if ("error" in gate) return gate.error;
   const dbi = db();
   if (!dbi) return NextResponse.json({ error: "db_not_configured" }, { status: 503 });

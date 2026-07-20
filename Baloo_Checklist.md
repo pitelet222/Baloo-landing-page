@@ -21,14 +21,17 @@
 > Auth verdict: **we already use a third-party provider — Supabase Auth.** Not rolling our own; no
 > migration to Clerk/Auth0 (it would split auth from our Postgres and break `auth.uid()` RLS). The
 > work is hardening, not migrating. Full reasoning in the Notion hub.
-- [ ] **S1 — Rate-limit the expensive routes** (`@upstash/ratelimit`; Upstash already installed):
-      `/api/analyze`, `/api/extract`, `/api/explain`, `/api/nutrition-context`. Today they are
-      **unauthenticated and unlimited**, and each call costs Firecrawl + Claude money — a for-loop
-      is a *financial* DoS. *Biggest money risk.* — **CC**
-- [ ] **S2 — Bot wall on account creation**: Turnstile captcha on signup + anonymous sign-in
-      (Supabase Auth supports it natively), and **guests may read/analyse but not publish**
-      (`requireVerifiedUser()` beside `requireUser()`). Today `signInAnonymously()` + no
-      `is_anonymous` check on any write = **one HTTP call per bot user, unlimited lists**. — **CC**
+- [x] **S1 — Rate-limit the expensive routes** ✅ shipped `9eaf514` (`lib/ratelimit.ts`; extract/
+      analyze/nutrition-context by IP, explain/products-analyze by user; friendly 429). ⚠️ **INERT
+      until the Upstash REST vars are set** — empty locally, unset on Vercel (see Ops). — **CC done / M owes env**
+- [x] **S2 (code) — Guest-publish wall** ✅ shipped: `requireVerifiedUser()` on every community write
+      (lists/comments/follows/votes/saves/reports/products-analyze); guests analyse-only; client
+      `useAuthGate()` prompts sign-in/upgrade. Verified: 401 signed-out (7 routes) + real account
+      passes. *(Note: anonymous sign-in is currently DISABLED on the Supabase project, so the guest
+      vector isn't live there today — the code guards it regardless.)*
+- [ ] **S2 (captcha) — DEFERRED**: Cloudflare Turnstile on signup + anonymous (Supabase-native).
+      Needs a Cloudflare account + the secret in the Supabase dashboard + `NEXT_PUBLIC_TURNSTILE_SITE_KEY`;
+      then wire the widget into the auth modal. — **M sets up infra / CC wires**
 - [ ] **S3 — Custom SMTP** (Resend; Loops stays marketing) + SPF/DKIM/DMARC on baloo.life.
       Supabase's built-in mailer is dev-only + rate-limited → **confirmation emails silently stop
       arriving at launch**. — **M/CC**

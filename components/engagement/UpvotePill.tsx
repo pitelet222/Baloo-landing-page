@@ -5,8 +5,7 @@
 // classification. Colour-only ~0.2s transition — Baloo doesn't press-animate.
 
 import { useState } from "react";
-import { useAuth } from "@/components/auth/useAuth";
-import { AuthModal } from "@/components/auth/AuthModal";
+import { useAuthGate } from "@/components/auth/useAuthGate";
 
 export function UpvotePill({
   targetType,
@@ -23,16 +22,15 @@ export function UpvotePill({
   withLabel?: boolean; // the product bar spells out "Upvote"
   size?: "xs" | "sm" | "md";
 }) {
-  const { available, user, refresh } = useAuth();
+  const { available, ensureVerified, promptUpgrade, modal } = useAuthGate();
   const [voted, setVoted] = useState(initialVoted);
   const [count, setCount] = useState(initialCount);
   const [busy, setBusy] = useState(false);
-  const [authOpen, setAuthOpen] = useState(false);
 
   if (!available) return null;
 
   async function toggle() {
-    if (!user) return setAuthOpen(true);
+    if (!ensureVerified()) return; // signed out → sign in; guest → upgrade prompt
     if (busy) return;
     setBusy(true);
     const nextVoted = !voted;
@@ -51,6 +49,7 @@ export function UpvotePill({
       } else {
         setVoted(!nextVoted);
         setCount((c) => c + (nextVoted ? -1 : 1));
+        if (res.status === 403) promptUpgrade(); // guest tried to upvote
       }
     } catch {
       setVoted(!nextVoted);
@@ -96,16 +95,7 @@ export function UpvotePill({
         {withLabel && <span>Upvote</span>}
         <span className="tabular-nums">{count}</span>
       </button>
-      {authOpen && (
-        <AuthModal
-          mode="signin"
-          onClose={() => setAuthOpen(false)}
-          onDone={() => {
-            setAuthOpen(false);
-            refresh();
-          }}
-        />
-      )}
+      {modal}
     </>
   );
 }

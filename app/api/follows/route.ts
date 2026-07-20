@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/auth";
+import { requireUser, requireVerifiedUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { followUser, unfollowUser } from "@/lib/db/queries/follows";
 import { recordActivity } from "@/lib/db/queries/activity";
@@ -7,7 +7,7 @@ import { recordActivity } from "@/lib/db/queries/activity";
 // Follow / unfollow (Order G6). POST { followingId } · DELETE ?followingId=…
 
 export async function POST(req: Request) {
-  const gate = await requireUser();
+  const gate = await requireVerifiedUser();
   if ("error" in gate) return gate.error;
   const dbi = db();
   if (!dbi) return NextResponse.json({ error: "db_not_configured" }, { status: 503 });

@@ -7,7 +7,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/useAuth";
-import { AuthModal } from "@/components/auth/AuthModal";
+import { AuthModal, type AuthMode } from "@/components/auth/AuthModal";
 import { UpvotePill } from "@/components/engagement/UpvotePill";
 import { Wordmark } from "@/components/Wordmark";
 import { OverflowMenu, OverflowItem } from "@/components/OverflowMenu";
@@ -85,7 +85,10 @@ export function CommentThread({
   const { available, user, profile, refresh } = useAuth();
   const [comments, setComments] = useState<ThreadComment[]>(initial);
   const [sort, setSort] = useState<ThreadSort>("top");
-  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode | null>(null);
+  // Commenting/reporting need a REAL account (Order S2); "Explain this" stays open to guests.
+  const verified = !!user && !user.isAnonymous;
+  const openAuth = () => setAuthMode(user?.isAnonymous ? "upgrade" : "signin");
 
   async function reload(nextSort: ThreadSort = sort) {
     try {
@@ -136,9 +139,9 @@ export function CommentThread({
       {/* Composer */}
       <Composer
         available={available}
-        signedIn={!!user}
+        signedIn={verified}
         profileName={profile?.displayName ?? profile?.handle ?? null}
-        onNeedAuth={() => setAuthOpen(true)}
+        onNeedAuth={openAuth}
         onPost={async (text) => {
           const res = await fetch("/api/comments", {
             method: "POST",
@@ -146,6 +149,7 @@ export function CommentThread({
             body: JSON.stringify({ productId, body: text }),
           });
           if (res.ok) await reload();
+          else if (res.status === 403) openAuth(); // guest → prompt an upgrade
           return res.ok;
         }}
       />
@@ -158,7 +162,7 @@ export function CommentThread({
           <ProductExplain
             productId={productId}
             signedIn={!!user}
-            onNeedAuth={() => setAuthOpen(true)}
+            onNeedAuth={openAuth}
           />
         </div>
       ) : (
@@ -168,8 +172,8 @@ export function CommentThread({
               <CommentRow
                 comment={c}
                 productId={productId}
-                signedIn={!!user}
-                onNeedAuth={() => setAuthOpen(true)}
+                signedIn={verified}
+                onNeedAuth={openAuth}
                 onChanged={reload}
               />
             </li>
@@ -177,12 +181,12 @@ export function CommentThread({
         </ul>
       )}
 
-      {authOpen && (
+      {authMode && (
         <AuthModal
-          mode="signin"
-          onClose={() => setAuthOpen(false)}
+          mode={authMode}
+          onClose={() => setAuthMode(null)}
           onDone={() => {
-            setAuthOpen(false);
+            setAuthMode(null);
             refresh();
           }}
         />
@@ -309,7 +313,10 @@ function CommentRow({
   const { available, user, profile } = useAuth();
   const [replying, setReplying] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
-  const explain = useExplain({ commentId: comment.id }, signedIn, onNeedAuth);
+  // "Explain this" is open to any signed-in user incl. guests (server keeps it on requireUser);
+  // reply/report require a real account via the `signedIn` (=verified) prop.
+  const anySignedIn = !!user;
+  const explain = useExplain({ commentId: comment.id }, anySignedIn, onNeedAuth);
   const isAuthor = !!user && user.id === comment.authorId;
 
   const avatarSize = isReply ? "h-7 w-7 text-[11px]" : "h-[34px] w-[34px] text-xs";
@@ -432,6 +439,7 @@ function CommentRow({
                   body: JSON.stringify({ productId, body: text, parentId: comment.id }),
                 });
                 if (res.ok) await onChanged();
+                else if (res.status === 403) onNeedAuth(); // guest → prompt an upgrade
                 return res.ok;
               }}
             />
