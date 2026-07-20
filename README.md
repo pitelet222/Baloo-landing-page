@@ -76,6 +76,7 @@ is documented in **[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)**.
 | Doc | What it's for | Cadence |
 |---|---|---|
 | **This README** | Front door: run it, deploy it, find things | Update on setup/structure changes |
+| [`docs/PROJECT_EXPLAINED.md`](docs/PROJECT_EXPLAINED.md) | **Plain-language walkthrough of the whole project + every decision and why** (good for onboarding / explaining to others) | Update on major decisions |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | **Living technical reference** — data model, pipeline, API + route surface, auth, caching | **Update as features land** |
 | [`docs/CHANGELOG.md`](docs/CHANGELOG.md) | Running record of shipped milestones | Append when work ships |
 | [`CLAUDE.md`](CLAUDE.md) | Rules + guardrails for AI-assisted work | Update when rules change |
