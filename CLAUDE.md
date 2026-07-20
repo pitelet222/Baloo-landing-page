@@ -1,4 +1,4 @@
-# Baloo — Landing Page Web Tool (v1)
+# Baloo — ingredient tool + community platform
 
 ## What this is
 A Next.js (App Router) web tool on baloo.life. The user pastes a supermarket product URL, hits
@@ -26,16 +26,31 @@ root files; blank skeletons to reset or seed new ones are in `docs/templates/`.
 - /api/subscribe — email → Loops (graceful if not configured).
 - app/page.tsx  — client orchestrator: extract first ("Reading ingredients…"), then stream analyse
                   via `experimental_useObject` ("Analysing with AI…").
+- Catalog write — after a successful analysis, `lib/ingest.ts` persists it to Postgres (product
+                  deduped on `canonical_key` + ingredients + offer) in `after()`; the product page
+                  (`/p/[slug]`) and lists reuse it. `/api/extract` also short-circuits: a KNOWN
+                  product (analysis done) returns the stored result and records a new offer, skipping
+                  the expensive analyse. NEVER let the catalog write block or break the user flow.
+- Two homes for the pipeline — streaming (`streamObject`) in the route for the paste flow, and a
+                  framework-agnostic, resumable engine in `lib/analysis/` (`runAnalysisForProduct`)
+                  for background re-analysis. Both share ONE prompt + schema.
 
 ## Hard rules
-- Keys are SERVER-SIDE env vars only: ANTHROPIC_API_KEY, FIRECRAWL_API_KEY, UPSTASH_REDIS_REST_URL,
-  UPSTASH_REDIS_REST_TOKEN, LOOPS_API_KEY. Never NEXT_PUBLIC_*. Never call these APIs from the client.
+- Secrets are SERVER-SIDE env vars only: ANTHROPIC_API_KEY, FIRECRAWL_API_KEY, DATABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY, UPSTASH_REDIS_REST_URL/TOKEN, LOOPS_API_KEY. Never call these from the
+  client. The ONLY `NEXT_PUBLIC_*` vars are `NEXT_PUBLIC_SUPABASE_URL`/`_ANON_KEY` — public by design
+  (Supabase safety is RLS, not key secrecy). No other secret ever gets a `NEXT_PUBLIC_` prefix.
 - Model: claude-sonnet-4-6 (see lib/config.ts). Use the AI SDK: `generateObject` for extract,
   `streamObject` + `experimental_useObject` for the streamed analysis.
 - Claude is the extraction layer — NO per-retailer CSS/regex parsers.
 - Ingredient order = label order (most-to-least by quantity). Preserve it; never re-sort.
-- Cache (Upstash Redis) keyed by hashUrl(url), 7-day TTL. Caching and email are OPTIONAL in code —
-  the app must run with those env vars absent.
+- Two caches: L1 Upstash Redis keyed by `hashUrl(url)` (7-day TTL, skips everything) + L2 the Postgres
+  catalog keyed by identity (`canonical_key`, skips the analyse). ALL infra is OPTIONAL in code —
+  Redis, Postgres, Supabase and email each degrade to a silent no-op when absent, and the app must
+  boot with zero env vars.
+- `ANALYSIS_MAX_TOKENS = 16000` (lib/config.ts) on BOTH analysis paths — the Anthropic default of
+  4096 truncates long ingredient lists, the object never validates, and the `after()` persist is
+  silently lost. Do not remove it.
 - Every failure shows ONE friendly message, never a raw error:
   "We couldn't read that page. Try a direct product link from Whole Foods, Ocado, Tesco, Target,
   or Kroger."
@@ -52,15 +67,18 @@ root files; blank skeletons to reset or seed new ones are in `docs/templates/`.
 - `/api/board` serves `getBoard()` + the `SHOW_TOP_SCANNERS` flag for the idle-homepage board,
   briefly cached (s-maxage 60); load-time fetch only, no polling.
 
-## Data layer (Phase 3 — community platform, Orders G1–G9)
+## Data layer (Phase 3 — community platform, Orders G1–G9 + P1–P2)
 - Postgres via Supabase + Drizzle: schema in `lib/db/schema.ts` (source of truth; migrations
-  generated into `drizzle/`), lazy client in `lib/db/index.ts` — **null when DATABASE_URL is
-  absent**, the app must keep running without it (same optional-infra rule as the Redis cache).
+  generated into `drizzle/`, `0000`–`0007`), lazy client in `lib/db/index.ts` — **null when
+  DATABASE_URL is absent**, the app must keep running without it (same optional-infra rule as Redis).
 - Two invariants: products dedupe on `canonical_key` (barcode, else normalised brand+name+size —
   everyone converges on ONE row per real product), and ingredient `what_it_is` is cached
   product-INDEPENDENTLY on `ingredients` while `why_its_here`/`role` live per-product on
   `ingredient_profile_items`.
 - Ingredient profiles are versioned, never deleted (`is_active` flags the current one).
+- Product/Offer split (P1): one product, many `offers` (retailer listings) → dedupe + "also available
+  at". The analysis engine (P2, `lib/analysis/`) makes analysis a resumable background job; the
+  identity short-circuit skips re-analysing a product we already know.
 - RLS is defence-in-depth for client access paths (`drizzle/0001_rls.sql`); server-side Drizzle
   bypasses it — API routes enforce auth in code (G2 `requireUser`).
 - Canonical plan: `Baloo_Phase3_Build_Orders.md` (spec) + `Baloo_Phase3_ProductOffer_Reconciliation.md`
@@ -97,10 +115,25 @@ root files; blank skeletons to reset or seed new ones are in `docs/templates/`.
 tell the user what to buy or avoid. Explain what ingredients are and why they are used. Context
 over judgment." (in lib/prompts.ts)
 
-## Out of scope for v1 (do not build)
-Accounts/login, saved history, nutrition facts panel, scores/ratings, comparisons/alternatives,
-mobile/native, paid subscriptions (Stripe account only, no paywall), non-food products,
-multiple languages.
+## Auth & security
+- Auth provider is **Supabase Auth (GoTrue)** — a managed third party; we never store or hash
+  passwords. `profiles.id` is a FK to `auth.users.id` and RLS uses `auth.uid()`, so auth MUST stay in
+  our Postgres — do NOT propose migrating to Clerk/Auth0 (it splits auth from data and breaks RLS).
+- Gates in `lib/auth.ts`: reads are public; every mutating route opens with `requireUser()` (401) or
+  `requireAdmin()` (403). Server Drizzle bypasses RLS, so these code checks are the real enforcement.
+- Hardening is PLANNED, not yet built (S-series in `Baloo_Launch_Plan.md`): rate-limit the paid
+  routes, captcha + "guests can't publish", custom SMTP, account deletion. Anonymous sign-in is
+  currently open — flag it, don't rely on it being safe.
+
+## Scope
+- **Graduated IN (built):** accounts/login, saved lists + saves, the nutrition-panel context, and
+  the community platform (profiles, discovery, follows/feed, comments, moderation). The active track
+  is the beta launch (`Baloo_Launch_Plan.md`): V3 design port, seed supply, one-click social sharing,
+  AI semantic search, plus the S-series security hardening.
+- **Still out of scope — do NOT build:** **scores/ratings/traffic-lights (forbidden forever)**,
+  good/bad verdicts or "better-than" comparisons, a paywall (Stripe account only, no paid tiers in
+  the beta), non-food products, and multiple languages/i18n. **Native mobile is deferred** (backlog
+  M1) — web/PWA is the target for now, but keep `lib/` portable for the eventual app.
 
 ## Versions / gotchas
 - Pinned to AI SDK v4 line (`ai` ^4, `@ai-sdk/*` ^1). If you upgrade to a newer major, the import
@@ -108,4 +141,8 @@ multiple languages.
   per the AI SDK docs.
 - Firecrawl is called via REST (/v2/scrape) in lib/firecrawl.ts to avoid SDK version drift; verify
   the response shape if Firecrawl changes it.
+- Next.js 15: route `params`/`searchParams` are async (`Promise<…>`) — await them.
+- Postgres via postgres.js with `prepare: false` over Supabase's **transaction pooler** (a pooler
+  requirement); after schema edits run `db:generate` → `db:migrate`, then re-run the Supabase security
+  advisor after any DDL.
 - Keep the pipeline in lib/ framework-agnostic so the mobile app can reuse it.
