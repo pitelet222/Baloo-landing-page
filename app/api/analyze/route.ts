@@ -9,6 +9,7 @@ import { mockAnalyzeStream } from "@/lib/mock";
 import { recordScan } from "@/lib/stats";
 import { ingestAnalysis } from "@/lib/ingest";
 import { geolocation } from "@vercel/functions";
+import { checkLimit, clientIp, tooMany } from "@/lib/ratelimit";
 
 export const maxDuration = 60;
 
@@ -18,6 +19,10 @@ export async function POST(req: Request) {
   // Dev/design mode: stream canned cards (no keys, no Claude) so the UI is fully previewable.
   // Gated on the key being ABSENT so a stray MOCK_PIPELINE can't shadow a real key.
   if (process.env.MOCK_PIPELINE && !process.env.ANTHROPIC_API_KEY) return mockAnalyzeStream();
+
+  // S1: cap the paid streaming analysis per IP before spending on Claude. Fail-open without Upstash.
+  const rl = await checkLimit("analyse", clientIp(req));
+  if (!rl.ok) return tooMany(rl.reset);
 
   const body = await req.json();
   const { product_name, retailer, ingredients_list, percentages, nutrition, key, url } = body;

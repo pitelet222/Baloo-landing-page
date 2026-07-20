@@ -9,6 +9,7 @@ import { explanationSchema, type Explanation } from "@/lib/schema";
 import { explainPrompt } from "@/lib/prompts";
 import { cacheGetText, cacheSetText } from "@/lib/cache";
 import { MODEL } from "@/lib/config";
+import { checkLimit, tooMany } from "@/lib/ratelimit";
 
 export const maxDuration = 30;
 
@@ -19,6 +20,11 @@ export const maxDuration = 30;
 export async function POST(req: Request) {
   const gate = await requireUser();
   if ("error" in gate) return gate.error;
+
+  // S1: cap the paid "Explain this" call per user. Fail-open without Upstash.
+  const rl = await checkLimit("explain", gate.user.id);
+  if (!rl.ok) return tooMany(rl.reset);
+
   const dbi = db();
   if (!dbi) return NextResponse.json({ error: "db_not_configured" }, { status: 503 });
 

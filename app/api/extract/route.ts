@@ -11,6 +11,7 @@ import { db } from "@/lib/db";
 import { getProductBySlugOrKey, getProductForPage } from "@/lib/db/queries/products";
 import { upsertOffer } from "@/lib/db/queries/offers";
 import { geolocation } from "@vercel/functions";
+import { checkLimit, clientIp, tooMany } from "@/lib/ratelimit";
 
 export const maxDuration = 60;
 
@@ -24,6 +25,10 @@ export const maxDuration = 60;
 //       analyse and records the new retailer as an offer. Identity is only knowable AFTER
 //       scraping, which is exactly why L2 lives here and not in Redis.
 export async function POST(req: Request) {
+  // S1: cap the paid path per IP before any scrape/extract spend. Fail-open without Upstash.
+  const rl = await checkLimit("extract", clientIp(req));
+  if (!rl.ok) return tooMany(rl.reset);
+
   let url: string;
   try {
     ({ url } = await req.json());

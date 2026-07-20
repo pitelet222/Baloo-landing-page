@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { runAnalysisForProduct } from "@/lib/analysis/runForProduct";
+import { checkLimit, tooMany } from "@/lib/ratelimit";
 
 export const maxDuration = 60;
 
@@ -13,6 +14,10 @@ export const maxDuration = 60;
 export async function POST(req: Request) {
   const gate = await requireUser();
   if ("error" in gate) return gate.error;
+
+  // S1: cap this paid retry/re-run per user. Fail-open without Upstash.
+  const rl = await checkLimit("productsAnalyze", gate.user.id);
+  if (!rl.ok) return tooMany(rl.reset);
 
   let body: { productId?: string; force?: boolean };
   try {

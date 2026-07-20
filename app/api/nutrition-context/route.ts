@@ -7,6 +7,7 @@ import { computeNutrition, pickHighlights, fallbackContextSentence } from "@/lib
 import { nutritionContextPrompt } from "@/lib/prompts";
 import { cacheGetText, cacheSetText } from "@/lib/cache";
 import { MODEL } from "@/lib/config";
+import { checkLimit, clientIp, tooMany } from "@/lib/ratelimit";
 
 export const maxDuration = 30;
 
@@ -16,6 +17,10 @@ export const maxDuration = 30;
 // cached in Upstash for 7 days; without a key (or on any failure) a deterministic template
 // sentence is returned instead, so the tab never blocks.
 export async function POST(req: Request) {
+  // S1: cap per IP — a cache miss here is a Claude call. Fail-open without Upstash.
+  const rl = await checkLimit("nutritionContext", clientIp(req));
+  if (!rl.ok) return tooMany(rl.reset);
+
   let body: unknown;
   try {
     body = await req.json();
