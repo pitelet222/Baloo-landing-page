@@ -127,6 +127,10 @@ over judgment." (in lib/prompts.ts)
 - Rate limiting (S1, `lib/ratelimit.ts`) guards the paid routes (extract/analyze/nutrition-context by
   IP; explain/products-analyze by user). Optional-infra: no-op (fail-open) without Upstash — so it is
   INERT until `UPSTASH_REDIS_REST_URL/TOKEN` are set (empty locally; unset on Vercel).
+- Security headers (S5, `next.config.mjs` `headers()`): HSTS, X-Frame-Options DENY, nosniff,
+  Referrer-Policy, Permissions-Policy are ENFORCING; CSP is **report-only** for now (`connect-src`
+  includes the Supabase origin from env). Report-only is clean (zero violations observed), so the
+  eventual flip to enforcing is low-risk — do it after S6 gives a real report endpoint.
 - Still PLANNED (S-series, `Baloo_Launch_Plan.md`): captcha/Turnstile (deferred — needs Cloudflare +
   Supabase setup), write volume caps (S4), security headers + WAF (S5), Sentry (S6), account deletion
   + unsubscribe (S7).

@@ -64,9 +64,10 @@ Three holes the audit found in shipped code:
   guests analyse-only; `useAuthGate()` on the client. **Captcha deferred** (Turnstile — needs your
   Cloudflare + Supabase setup). Note: anonymous sign-in is currently disabled on the Supabase project.
 - **S3 — custom SMTP** (Resend) + SPF/DKIM/DMARC. *Signup breaks at launch without it.*
-- **S4** write rate limits/caps · **S5** security headers + Vercel WAF + leaked-password toggle + zod
-  · **S6** error monitoring (Sentry) · **S7** unsubscribe **and** account deletion (GDPR; no delete
-  flow exists) · **S8** privacy policy + terms (**J**).
+- **S4** write rate limits/caps · **S5** ✅ security headers shipped (enforcing safe set + report-only
+  CSP); remaining: M flips leaked-password + Vercel WAF toggles, later flip CSP to enforcing · **S6**
+  error monitoring (Sentry) · **S7** unsubscribe **and** account deletion (GDPR; no delete flow
+  exists) · **S8** privacy policy + terms (**J**).
 
 ### Tier B — high-value fast-follow (can ship days after beta)
 - **N1/N2 — Notifications.** In-app first (a bell over the existing `activity` table from G6), then

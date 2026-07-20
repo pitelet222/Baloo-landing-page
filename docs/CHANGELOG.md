@@ -6,6 +6,10 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **Security S5 — response headers:** `next.config.mjs` now sends HSTS, X-Frame-Options DENY,
+  nosniff, Referrer-Policy and Permissions-Policy (enforcing) plus a **report-only** CSP whose
+  `connect-src` includes the Supabase origin. Verified: headers present, sign-in works through the
+  CSP, zero violations. Two dashboard toggles left for M (leaked-password protection, Vercel WAF).
 - **Security S1 — rate limiting:** `lib/ratelimit.ts` (sliding-window, Upstash, fail-open) on the
   paid routes — extract/analyze/nutrition-context by IP, explain/products-analyze by user — with a
   friendly 429. Inert until the Upstash REST vars are set. (`9eaf514`)

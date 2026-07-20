@@ -36,9 +36,15 @@
       Supabase's built-in mailer is dev-only + rate-limited → **confirmation emails silently stop
       arriving at launch**. — **M/CC**
 - [ ] **S4 — Write rate limits + volume caps** (lists/day, items/list, comments/min, follows/min) — **CC**
-- [ ] **S5 — Quick wins**: security headers (CSP/HSTS/X-Frame-Options) in `next.config` · Vercel WAF
-      + Attack Challenge Mode · leaked-password protection (the open advisor WARN) · zod on every
-      API body — **CC/M**
+- [x] **S5 (headers) — Security headers** ✅ shipped (`next.config.mjs`): HSTS · X-Frame-Options DENY
+      · nosniff · Referrer-Policy · Permissions-Policy (enforcing) + **report-only CSP** (Supabase
+      origin in `connect-src`). Verified: present + zero CSP violations + sign-in works. — **CC done**
+  - [ ] **M toggles:** enable **leaked-password protection** (Supabase → Auth → Passwords; clears the
+        advisor WARN) + **Vercel WAF / Attack Challenge Mode** (Vercel → Firewall) — **M**
+  - [ ] *(later)* flip CSP to **enforcing** once report-only is clean in prod (pairs with S6's report
+        endpoint) — **CC**
+  - [ ] *(dropped from S5)* "zod on every body" — free-text routes already cap server-side; fold any
+        standardization into S4 — **CC**
 - [ ] **S6 — Error monitoring** (Sentry) — "stable from the get-go" = knowing prod broke first — **CC**
 - [ ] **S7 — "Dar de baja"**: email unsubscribe (GDPR + Gmail/Yahoo one-click header) **and**
       account deletion (right to erasure — **we have no delete flow at all**; EU launch) — **CC**

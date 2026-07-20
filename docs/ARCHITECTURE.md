@@ -157,6 +157,11 @@ are the real enforcement.
 extract/analyze/nutrition-context by IP, explain/products-analyze by user — returning a friendly 429.
 Optional-infra (fail-open without Upstash), so **inert until `UPSTASH_REDIS_REST_URL/TOKEN` are set**.
 
+**Security headers** (Order S5, `next.config.mjs` `headers()`, all routes): HSTS · X-Frame-Options
+DENY · X-Content-Type-Options nosniff · Referrer-Policy · Permissions-Policy are **enforcing**; CSP
+ships **report-only** (`connect-src` carries the Supabase origin from env). Report-only is currently
+clean (no violations), so flipping to enforcing later is low-risk.
+
 > **Still planned (S-series, `Baloo_Launch_Plan.md`):** captcha/Turnstile (deferred — Cloudflare +
 > Supabase setup), write volume caps (S4), security headers + WAF (S5), monitoring (S6), account
 > deletion + unsubscribe (S7).
