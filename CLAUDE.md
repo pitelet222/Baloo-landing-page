@@ -4,7 +4,11 @@
 A Next.js (App Router) web tool on baloo.life. The user pastes a supermarket product URL, hits
 Analyse, and gets a streamed, per-ingredient breakdown: what each ingredient is, why it's in this
 product, a Natural/Processed tag, and any listed %. The homepage IS the tool — no separate landing
-and app pages. This is the prototype for a future mobile app; keep the pipeline portable.
+and app pages. This is the prototype for a future mobile app; keep the pipeline portable. On top of
+the tool sits the Phase 3 community platform (accounts, catalog, lists, profiles, discovery).
+
+**Living technical reference: `docs/ARCHITECTURE.md`** — the current data model, pipeline, route/API
+surface, auth, and caching. Keep it (and `docs/CHANGELOG.md`) up to date as features land.
 
 ## Design context
 The design system lives at the repo root: `PRODUCT.md` (strategic — register/users/positioning and

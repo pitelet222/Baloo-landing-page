@@ -1,68 +1,103 @@
-# Baloo — Landing Page Web Tool
+# Baloo
 
-Paste a supermarket product URL → get a streamed, per-ingredient breakdown (what each ingredient is,
-why it's in that product, Natural/Processed, any listed %). Next.js + Firecrawl + Claude.
+**Know what's in your food.** Paste a supermarket product link and Baloo streams back a calm,
+plain-language breakdown of every ingredient — what it is, why it's in *that* product, a
+Natural/Processed tag, and any listed %. From there, products can be saved into shareable lists and
+discovered through the people who curate them.
+
+Baloo **explains, it never scores.** No health score, no rating, no traffic lights — ever. That
+guardrail is the whole point, and it's enforced in [`PRODUCT.md`](PRODUCT.md) and
+[`DESIGN.md`](DESIGN.md).
+
+> **Status:** the ingredient tool (Phases 1–2) is live and the community platform (Phase 3 —
+> accounts, lists, profiles, discovery, comments, moderation) is built and being hardened toward a
+> beta. See [`Baloo_Launch_Plan.md`](Baloo_Launch_Plan.md) for what's next.
+
+---
 
 ## Quick start
 
 ```bash
 npm install
-cp .env.example .env.local   # fill in keys (see below)
+cp .env.example .env.local   # fill in keys (see below); all are optional to boot
 npm run dev                  # http://localhost:3000
 ```
 
-The UI runs immediately with no keys — you can type and validate URLs. The live analysis turns on
-once `ANTHROPIC_API_KEY` and `FIRECRAWL_API_KEY` are set.
+The app **boots with zero environment variables** — every piece of infrastructure (Claude,
+Firecrawl, Redis, Postgres, email) is optional in code. With no keys you get the full UI; set
+`MOCK_PIPELINE=1` to walk the whole reading → streaming → results flow without spending anything. Add
+keys to switch on the real pipeline and the community features.
 
-## Environment variables (server-side only)
+| Command | What it does |
+|---|---|
+| `npm run dev` | Dev server on :3000 |
+| `npm run build` / `npm start` | Production build / serve |
+| `npm run typecheck` | `tsc --noEmit` (also runs in CI on every push) |
+| `npm run db:generate` | Generate a Drizzle migration from `lib/db/schema.ts` |
+| `npm run db:migrate` | Apply migrations to `DATABASE_URL` |
+| `npm run db:seed` | Seed demo data (products, users, lists) |
+| `npm run db:check` | Read-only assertions against the live DB |
 
-| Variable | Needed for | Where to get it |
+## Environment variables
+
+All server-side unless noted. Full annotated list in [`.env.example`](.env.example).
+
+| Variable | Needed for | Optional? |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | The analysis (required) | console.anthropic.com |
-| `FIRECRAWL_API_KEY` | Scraping product pages (required) | firecrawl.dev |
-| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Caching (optional) | Vercel → Marketplace → Upstash Redis |
-| `LOOPS_API_KEY` | Email capture (optional) | loops.so |
+| `ANTHROPIC_API_KEY` | Ingredient analysis (Claude) | Required for live analysis |
+| `FIRECRAWL_API_KEY` | Scraping product pages | Required for live analysis |
+| `DATABASE_URL` | Postgres (accounts, lists, catalog) | Optional — no DB → tool-only mode |
+| `NEXT_PUBLIC_SUPABASE_URL` / `_ANON_KEY` | Supabase Auth (client) | Public **by design** (safety is RLS, not key secrecy) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-side ingestion/admin | Optional (with `DATABASE_URL`) |
+| `UPSTASH_REDIS_REST_URL` / `_TOKEN` | URL cache + the homepage board | Optional |
+| `LOOPS_API_KEY` | Email capture | Optional |
 
-Never prefix these with `NEXT_PUBLIC_` — they must stay on the server.
+**Never** prefix a secret with `NEXT_PUBLIC_`. The two Supabase `NEXT_PUBLIC_` vars are the single
+deliberate exception — the Supabase model makes them public and relies on Row-Level Security.
 
-## How it works
-
-```
-app/page.tsx ── POST /api/extract ──> Firecrawl scrape ──> Claude extract (generateObject)
-             └─ POST /api/analyze ──> Claude analyse (streamObject) ──> cards stream via useObject
-```
-
-- `/api/extract` checks the cache first; a hit returns the full result instantly.
-- `/api/analyze` streams ingredient cards and writes the finished analysis to cache (7-day TTL).
-- All failures surface one friendly message; nothing technical reaches the user.
-
-## Project layout
+## How it works (at a glance)
 
 ```
-app/
-  page.tsx              the tool (URL input → loading → streamed results → email)
-  api/extract/route.ts  cache check + Firecrawl + Claude extract
-  api/analyze/route.ts  streamObject analysis + cache write
-  api/subscribe/route.ts email → Loops
-components/              UrlForm, LoadingState, ResultsView, IngredientCard, EmailCapture, RetailerRow
-lib/                     schema (Zod), prompts, firecrawl, cache, hash, retailers, config
-fixtures/test-urls.ts    brief's test products + a no-ingredients error case
+Paste URL ─▶ /api/extract ─▶ Firecrawl scrape ─▶ Claude extract ─▶ header + ordered ingredients
+                  │                                                         │
+          (L1 Redis cache, URL-keyed)                            /api/analyze ─▶ Claude streamObject
+          (L2 Postgres, identity-keyed:                                   │
+           known product → skip analysis)                        cards stream to the client
+                                                                          │
+                                                          persisted to the catalog (product page, lists)
 ```
+
+A successful analysis is stored **once** per real product (deduped on a canonical key) and reused
+everywhere — the product page, other retailers' listings, and any list it's added to. The full model
+is documented in **[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)**.
+
+## Documentation map
+
+| Doc | What it's for | Cadence |
+|---|---|---|
+| **This README** | Front door: run it, deploy it, find things | Update on setup/structure changes |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | **Living technical reference** — data model, pipeline, API + route surface, auth, caching | **Update as features land** |
+| [`docs/CHANGELOG.md`](docs/CHANGELOG.md) | Running record of shipped milestones | Append when work ships |
+| [`CLAUDE.md`](CLAUDE.md) | Rules + guardrails for AI-assisted work | Update when rules change |
+| [`PRODUCT.md`](PRODUCT.md) / [`DESIGN.md`](DESIGN.md) | Strategy + visual system (the score-free guardrail) | Update on brand/design shifts |
+| [`Baloo_Launch_Plan.md`](Baloo_Launch_Plan.md) | The beta launch track (L-series + S-series security) | The active plan |
+| [`Baloo_Checklist.md`](Baloo_Checklist.md) | Pending work across every phase | Living checklist |
+| [`Baloo_Phase3_Build_Orders.md`](Baloo_Phase3_Build_Orders.md) · [`_ProductOffer_Reconciliation.md`](Baloo_Phase3_ProductOffer_Reconciliation.md) | Phase 3 spec + current plan | Reference |
+| [`docs/archive/`](docs/archive/) | Superseded handoffs, benchmark, old guides | Historical |
 
 ## Deploy (Vercel)
 
 ```bash
 npx vercel            # link/create the project
-npx vercel env add    # add the env vars (or via the dashboard)
-npx vercel --prod     # deploy
+npx vercel --prod     # deploy (env vars via the dashboard)
 ```
 
-Add caching from **Vercel → Storage/Marketplace → Upstash Redis** (Vercel KV is retired); it injects
-the Upstash env vars automatically. Connect **baloo.life** under the project's Domains once it passes
-the launch checks in `Baloo_Checklist.md`.
+Add caching from **Vercel → Marketplace → Upstash Redis** (it injects the Upstash vars). Connect
+**baloo.life** under Domains once the launch checks in [`Baloo_Checklist.md`](Baloo_Checklist.md)
+pass. CI (typecheck + build) runs on every push via [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
 ## Notes
-- Pinned to the AI SDK v4 line; see `CLAUDE.md` if you upgrade.
-- `claude-sonnet-4-6` is set in `lib/config.ts`.
-```
-# Baloo-landing-page
+
+- Model `claude-sonnet-4-6`, set in [`lib/config.ts`](lib/config.ts).
+- Pinned to the **AI SDK v4** line (`ai` ^4, `@ai-sdk/*` ^1); see [`CLAUDE.md`](CLAUDE.md) before upgrading.
+- The `lib/` pipeline is deliberately framework-agnostic so a future mobile app can reuse it.
