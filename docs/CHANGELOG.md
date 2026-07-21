@@ -6,6 +6,14 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **L1a — the V3 world (design port, slice 1):** the whole app moved to V3 "warm boutique" via the
+  token layer — cream `#F4EDE3` canvas, warm paper `#FDFAF6`, brown-black ink `#2D2417`, warm
+  hairline `#E8DDD0`, **Playfair Display** display font, warm-tinted shadows. `lib/cover.ts` covers
+  are now flat V3 tints (no gradients); OG route matched. Natural/Processed (green/amber) untouched —
+  still the one meaningful colour. Design canon (`DESIGN.md` + `.impeccable/design.json`) updated to
+  V3 so the design hook enforces the new system. `muted` darkened to `#766753` for WCAG AA on cream
+  (measured 4.71:1). Verified live: bg/type/covers/tags/contrast + clean console. Layout restructures
+  (hero, dual-intent search, count view) come in L1b/L1c.
 - **L6 — Save-only (upvote removal):** the product/list Upvote is gone — Save is the one social
   signal. Votes API narrowed to comments (product/list → 400), the UpvotePill mounts removed from
   the list + product pages, "Popular this week" ranks by saves alone, and the feed no longer shows

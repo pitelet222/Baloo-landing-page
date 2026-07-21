@@ -7,12 +7,16 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // V3 "warm boutique" palette (Order L1a) — cream paper world, brown-black ink. muted is
+      // deliberately darker than the V3 mock's #8C7B68: that value is ~3.5:1 on canvas and fails
+      // WCAG AA for the small text it's used on; #766753 keeps the hue at ~4.7:1 (PRODUCT.md
+      // commits to AA; measured in-browser). natural/processed are untouched — the one meaningful colour.
       colors: {
-        ink: "#1A1A18",
-        muted: "#6F756E",
-        line: "#ECEBE5",
-        paper: "#FFFFFF",
-        canvas: "#FBFBF8",
+        ink: "#2D2417",
+        muted: "#766753",
+        line: "#E8DDD0",
+        paper: "#FDFAF6",
+        canvas: "#F4EDE3",
         natural: { DEFAULT: "#2E7D52", soft: "#E7F1EB" },
         processed: { DEFAULT: "#B5701F", soft: "#F6ECDD" },
       },
@@ -22,9 +26,9 @@ const config: Config = {
       },
       maxWidth: { tool: "640px" },
       boxShadow: {
-        card: "0 1px 2px rgba(26,26,24,0.04), 0 1px 3px rgba(26,26,24,0.05)",
-        "card-hover": "0 4px 14px rgba(26,26,24,0.07), 0 2px 5px rgba(26,26,24,0.04)",
-        hero: "0 1px 2px rgba(26,26,24,0.05), 0 10px 30px -12px rgba(26,26,24,0.12)",
+        card: "0 1px 2px rgba(45,36,23,0.04), 0 1px 3px rgba(45,36,23,0.05)",
+        "card-hover": "0 4px 14px rgba(45,36,23,0.07), 0 2px 5px rgba(45,36,23,0.04)",
+        hero: "0 1px 2px rgba(45,36,23,0.05), 0 10px 30px -12px rgba(45,36,23,0.12)",
       },
       keyframes: {
         rise: {

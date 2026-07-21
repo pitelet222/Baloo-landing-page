@@ -12,7 +12,14 @@
 > ✅ **Design direction chosen: V3** (warm boutique) — the old blocker is resolved.
 
 **Tier A — beta-blocking:**
-- [ ] **L1 — V3 design port** (starts with Mobbin refs + app shell; PART C ritual; design the dual-intent search box) — **CC/CD/M**
+- [~] **L1 — V3 design port** *(in progress)* — **CC/CD/M**
+  - [x] **L1a — the V3 world** ✅ shipped: cream + Playfair tokens (tailwind + layout), flat cover
+        tints, warm shadows, OG route, design canon (DESIGN.md + design.json). muted darkened to AA
+        (`#766753`, 4.71:1). Whole app recoloured at once; verified live. — **CC**
+  - [ ] **L1b — homepage**: hero copy/layout, dual-intent search box (URL vs question chip), full-width
+        sticky shell + pill nav, "Popular lists" strip — **CC** *(Mobbin: Julienne/Contra)*
+  - [ ] **L1c — analysis view**: striking count + numbered rows (drawer variant rides with P5) — **CC** *(Mobbin: Julienne)*
+  - [ ] Per-screen passes: lists, discover, profile, modals — **CC**
 - [ ] **L4 — Seed supply**: official accounts (@baloo/@balooteam/@proteinpicks/@kidslunchbox) + genuinely good starter lists — **M/CC**
 - [x] **L5c — Visibility auto-public** ✅ shipped: `/u/[handle]` 404s for non-owners of a 0-public-list
       profile + generic metadata; owner sees own + a "publish to go public" nudge (Share hidden).

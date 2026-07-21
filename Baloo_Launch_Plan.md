@@ -30,9 +30,12 @@ where they overlap, **this ordering wins for launch**. Working board: the `Baloo
 ## The launch track (ordered)
 
 ### Tier A — beta-blocking (a credible beta needs these)
-- **L1 — V3 design port.** Adopt V3 across the app, screen-by-screen per PART C (three approaches →
-  Rams/Ive/Linear/Duolingo critique → build), starting with the app shell + homepage. Design the
-  **dual-intent search box** now (URL + "ask anything…"), even if L3's semantic backend lands after.
+- **L1 — V3 design port** *(in progress).* Adopt V3 across the app, screen-by-screen.
+  - **L1a ✅ shipped** — the V3 *world*: cream + Playfair tokens, flat covers, warm shadows, design
+    canon updated. Whole app recoloured via the token layer at once (low per-screen risk); muted
+    darkened to hold WCAG AA on cream. Blockers were already resolved, Mobbin refs logged.
+  - **L1b** homepage: hero + dual-intent search box (URL vs "ask anything…") + full-width sticky
+    shell + pill nav. **L1c** analysis view: striking count + numbered rows. Then per-screen passes.
 - **L4 — Seed supply.** Official accounts (**@baloo, @balooteam, @proteinpicks, @kidslunchbox**) + a
   set of genuinely good curated lists (Best protein yogurts · Cereals I'd buy again · Ice creams
   under 5 ingredients · Best snacks for kids · Mercadona essentials). An empty community is a dead one.
