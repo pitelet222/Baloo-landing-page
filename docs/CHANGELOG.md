@@ -6,6 +6,13 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **L1b — V3 homepage (design port, slice 2):** rebuilt the homepage to the V3 layout. New
+  `HomeSearch` is the locked dual-intent box — paste a URL → analyse (existing flow); type anything
+  else → `/discover` search (keyword now, L3 semantic later) — with a live intent chip. V3 hero
+  (eyebrow rule, Playfair h1 with the italic-green "your", lede), SiteHeader nav → pills, and a new
+  `PopularLists` strip (`/api/popular`, saves-only, hides when no signal). `UrlForm` removed.
+  Verified live: hero + intent detection (text→Search, URL→Product link) + Popular card renders with
+  a real save + all pages 200 + clean console. Sticky full-width shell + count view are L1d/L1c.
 - **L1a — the V3 world (design port, slice 1):** the whole app moved to V3 "warm boutique" via the
   token layer — cream `#F4EDE3` canvas, warm paper `#FDFAF6`, brown-black ink `#2D2417`, warm
   hairline `#E8DDD0`, **Playfair Display** display font, warm-tinted shadows. `lib/cover.ts` covers

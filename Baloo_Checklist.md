@@ -16,8 +16,9 @@
   - [x] **L1a — the V3 world** ✅ shipped: cream + Playfair tokens (tailwind + layout), flat cover
         tints, warm shadows, OG route, design canon (DESIGN.md + design.json). muted darkened to AA
         (`#766753`, 4.71:1). Whole app recoloured at once; verified live. — **CC**
-  - [ ] **L1b — homepage**: hero copy/layout, dual-intent search box (URL vs question chip), full-width
-        sticky shell + pill nav, "Popular lists" strip — **CC** *(Mobbin: Julienne/Contra)*
+  - [x] **L1b — homepage** ✅ shipped: V3 hero (eyebrow, italic-green "your"), `HomeSearch` dual-intent
+        box (URL→analyse / text→/discover, live intent chip), nav → pills, `PopularLists` strip
+        (`/api/popular`, saves-only). Verified live. *(full-width sticky shell → L1d; count view → L1c)* — **CC**
   - [ ] **L1c — analysis view**: striking count + numbered rows (drawer variant rides with P5) — **CC** *(Mobbin: Julienne)*
   - [ ] Per-screen passes: lists, discover, profile, modals — **CC**
 - [ ] **L4 — Seed supply**: official accounts (@baloo/@balooteam/@proteinpicks/@kidslunchbox) + genuinely good starter lists — **M/CC**

@@ -17,20 +17,22 @@ export function SiteHeader({
   action?: React.ReactNode;
   showNav?: boolean;
 }) {
+  // V3 pill nav (Order L1b): quiet rounded links that warm on hover. The active state is left to
+  // the pages for now (L1d's sticky shell can wire `usePathname`).
+  const pill =
+    "rounded-full px-3 py-1.5 text-[13px] font-medium text-muted transition hover:bg-canvas hover:text-ink";
   const nav = showNav && (
     <nav
-      className={`items-center gap-3 text-[13px] font-medium text-muted ${
-        variant === "center" ? "hidden sm:flex" : "flex"
-      }`}
+      className={`items-center gap-1 ${variant === "center" ? "hidden sm:flex" : "flex"}`}
       aria-label="Site"
     >
-      <Link href="/feed" className="transition hover:text-ink">
+      <Link href="/feed" className={pill}>
         Following
       </Link>
-      <Link href="/discover" className="transition hover:text-ink">
+      <Link href="/discover" className={pill}>
         Discover
       </Link>
-      <Link href="/lists" className="transition hover:text-ink">
+      <Link href="/lists" className={pill}>
         Lists
       </Link>
       <AdminNavLink />

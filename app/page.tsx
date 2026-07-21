@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { experimental_useObject as useObject } from "@ai-sdk/react";
 import { analysisSchema, type Ingredient, type Nutrition } from "@/lib/schema";
-import { UrlForm } from "@/components/UrlForm";
+import Link from "next/link";
+import { HomeSearch } from "@/components/HomeSearch";
 import { LoadingState } from "@/components/LoadingState";
 import { ResultsView } from "@/components/ResultsView";
 import { EmailCapture } from "@/components/EmailCapture";
 import { RetailerRow } from "@/components/RetailerRow";
+import { PopularLists } from "@/components/PopularLists";
 import { HowItWorks } from "@/components/HowItWorks";
 import { Board } from "@/components/Board";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -113,42 +115,43 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen">
-      {/* Soft top wash — warmth without color, fades to canvas. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[460px] bg-[radial-gradient(60%_100%_at_50%_0%,theme(colors.natural.soft)_0%,transparent_72%)] opacity-70"
-      />
-
       <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5">
-        <SiteHeader variant="center" />
+        <SiteHeader variant="left" />
 
-        <section className={`text-center ${idle ? "pt-14 sm:pt-20" : "pt-8"}`}>
+        <section className={idle ? "pt-12 sm:pt-16" : "pt-8"}>
           {idle && (
-            <>
-              <h1 className="font-display text-4xl leading-[1.1] text-ink sm:text-5xl">
-                Know what&apos;s in your food.
+            <div className="max-w-xl">
+              <RetailerRow />
+              <h1 className="mt-5 font-display text-[40px] leading-[1.08] tracking-[-0.01em] text-ink sm:text-[54px]">
+                Know what&rsquo;s in <em className="text-natural">your</em> food.
               </h1>
-              <p className="mx-auto mt-4 max-w-lg text-lg text-muted">
-                Paste a supermarket product link and see what every ingredient is — and why
-                it&apos;s there.
+              <p className="mt-5 max-w-md text-[17px] leading-relaxed text-muted">
+                Paste a supermarket product link and get a calm, plain-language breakdown of every
+                ingredient — what it is, and why it&rsquo;s there.
               </p>
-            </>
+            </div>
           )}
 
-          <div className={idle ? "mt-9" : ""}>
-            <UrlForm onAnalyze={handleAnalyze} busy={busy} />
+          <div className={idle ? "mt-7" : ""}>
+            <HomeSearch onAnalyze={handleAnalyze} busy={busy} />
           </div>
 
           {idle && (
-            <>
-              <RetailerRow />
-              <p className="mt-4 text-xs text-muted/70">
+            <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
+              <Link
+                href="/p/oatly-oat-drink-barista-edition"
+                className="font-medium text-natural hover:underline"
+              >
+                See a sample analysis →
+              </Link>
+              <span className="text-muted/70">
                 Free &middot; No sign-up &middot; Reads the actual product label
-              </p>
-            </>
+              </span>
+            </p>
           )}
         </section>
 
+        {idle && <PopularLists />}
         {idle && <HowItWorks />}
         {idle && <Board />}
 
