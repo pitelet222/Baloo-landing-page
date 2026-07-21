@@ -6,6 +6,14 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **L7 — region prioritisation:** Discover's "Recently added" grid soft-ranks by "% of a list's
+  products purchasable in the viewer's region" — a retailer→region map (`lib/config.ts` +
+  `lib/retailers.ts`), availability math (`lib/region.ts`), a batch composition query
+  (`getListsRetailers`) + `withRegionAvailability`, a server-side "Shopping in US/UK" toggle, and a
+  neutral availability line on `ListCard`. No migration (derived from `products`/`offers.retailer`);
+  never a hard filter. Region math + the live query verified.
+- **V3 design review (21 Jul):** 3 decisions logged (Upvote→Save, auth flow, share-card gradients) +
+  L7 added as a build order. (`53633c4`)
 - **Security S5 — response headers:** `next.config.mjs` now sends HSTS, X-Frame-Options DENY,
   nosniff, Referrer-Policy and Permissions-Policy (enforcing) plus a **report-only** CSP whose
   `connect-src` includes the Supabase origin. Verified: headers present, sign-in works through the

@@ -2,11 +2,12 @@
 // consumes these; callers own the db() null-guard and, from G2 onward, the auth check that the
 // acting user owns the list.
 
-import { and, asc, desc, eq, max, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, max, sql } from "drizzle-orm";
 import type { Db } from "../index";
 import {
   listItems,
   lists,
+  offers,
   profiles,
   saves,
   products,
@@ -14,6 +15,13 @@ import {
   type ListItem,
   type Product,
 } from "../schema";
+import {
+  computeAvailability,
+  availabilityLabel,
+  type AvailabilityTone,
+  type ListAvailability,
+} from "../../region";
+import type { Region } from "../../retailers";
 
 export async function createList(
   dbi: Db,
@@ -232,6 +240,62 @@ export async function getPublicListsRecent(dbi: Db, limit = 12): Promise<ListWit
     saveCount: r.saveCount,
     ownerHandle: r.ownerHandle,
   }));
+}
+
+// ── Region availability (Order L7) ────────────────────────────────────────────────────────────
+export type ListRegionInfo = ListAvailability & { label: string; tone: AvailabilityTone };
+
+// Per list → per product → the set of retailers it's sold at (base products.retailer ∪ all
+// offers.retailer). ONE query for the whole batch; aggregated in code so the retailer→region map
+// stays in lib/. Empty ids → empty map.
+export async function getListsRetailers(
+  dbi: Db,
+  listIds: string[],
+): Promise<Map<string, Map<string, string[]>>> {
+  const out = new Map<string, Map<string, string[]>>();
+  if (listIds.length === 0) return out;
+  const rows = await dbi
+    .select({
+      listId: listItems.listId,
+      productId: listItems.productId,
+      productRetailer: products.retailer,
+      offerRetailer: offers.retailer,
+    })
+    .from(listItems)
+    .innerJoin(products, eq(products.id, listItems.productId))
+    .leftJoin(offers, eq(offers.productId, listItems.productId))
+    .where(inArray(listItems.listId, listIds));
+
+  for (const r of rows) {
+    let perProduct = out.get(r.listId);
+    if (!perProduct) out.set(r.listId, (perProduct = new Map()));
+    let set = perProduct.get(r.productId);
+    if (!set) perProduct.set(r.productId, (set = []));
+    for (const rt of [r.productRetailer, r.offerRetailer]) {
+      if (rt && !set.includes(rt)) set.push(rt);
+    }
+  }
+  return out;
+}
+
+// Annotate already-fetched lists with their availability in `region` and SOFT-rank by it (higher %
+// first; stable — the incoming order is the tie-break; a list with no availability sorts last but is
+// NEVER dropped). Additive layer over getPublicListsRecent / getPopularListsThisWeek.
+export async function withRegionAvailability<T extends { id: string }>(
+  dbi: Db,
+  rows: T[],
+  region: Region,
+): Promise<(T & { availability: ListRegionInfo | null })[]> {
+  if (rows.length === 0) return [];
+  const retailers = await getListsRetailers(dbi, rows.map((r) => r.id));
+  return rows
+    .map((row, i) => {
+      const a = computeAvailability(retailers.get(row.id) ?? new Map(), region);
+      const label = availabilityLabel(a);
+      return { row: { ...row, availability: label ? { ...a, ...label } : null }, i };
+    })
+    .sort((x, y) => (y.row.availability?.pct ?? 0) - (x.row.availability?.pct ?? 0) || x.i - y.i)
+    .map((e) => e.row);
 }
 
 async function touch(dbi: Db, listId: string): Promise<void> {

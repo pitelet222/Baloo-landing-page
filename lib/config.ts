@@ -18,10 +18,12 @@ export const ANALYSIS_MAX_TOKENS = 16000;
 
 // Retailers the brief commits to supporting. Used for client-side URL validation
 // and for the friendly error copy. Extend by adding to this list.
-export const SUPPORTED_RETAILERS: { name: string; match: string[] }[] = [
-  { name: "Whole Foods", match: ["wholefoodsmarket.com", "wholefoods.com"] },
-  { name: "Ocado", match: ["ocado.com"] },
-  { name: "Tesco", match: ["tesco.com"] },
-  { name: "Target", match: ["target.com"] },
-  { name: "Kroger", match: ["kroger.com"] },
+// `region` (Order L7) is the market a retailer serves — drives Discover's "% available where you
+// shop" soft-ranking. Derived here in code (the retailer set is small + static), never stored.
+export const SUPPORTED_RETAILERS: { name: string; match: string[]; region: "US" | "UK" }[] = [
+  { name: "Whole Foods", match: ["wholefoodsmarket.com", "wholefoods.com"], region: "US" },
+  { name: "Ocado", match: ["ocado.com"], region: "UK" },
+  { name: "Tesco", match: ["tesco.com"], region: "UK" },
+  { name: "Target", match: ["target.com"], region: "US" },
+  { name: "Kroger", match: ["kroger.com"], region: "US" },
 ];

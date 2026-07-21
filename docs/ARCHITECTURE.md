@@ -196,6 +196,7 @@ lib/
   firecrawl.ts   REST scrape                        cache.ts / hash.ts   L1 Redis
   nutrition.ts   all nutrition maths               profile.ts           UK reference intakes
   stats.ts       fire-and-forget scan logging (homepage board)          config.ts  model + limits
+  region.ts      retailer→region availability math (Order L7) — Discover soft-ranks by "% you can buy"
 drizzle/         0000–0007 migrations + 0001_rls.sql (RLS policies)
 scripts/         seed-dev.ts · check-db.ts · make-admin.ts
 docs/            ARCHITECTURE.md (this) · CHANGELOG.md · templates/ · archive/

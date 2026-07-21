@@ -82,12 +82,12 @@ Three holes the audit found in shipped code:
   save/add an individual product to your own (keep-for-later).
 - **L5a/b — Identity for distribution.** `baloo.life/@username` URL (profile at `/@handle`, redirect
   the current `/u/[handle]`); username change + permanent redirect.
-- **L7 — Region prioritisation** *(new, from Jitain + the V3 design).* Sort Discover by "% of a list's
-  products purchasable in the viewer's region." Buildable on the existing model: every product carries
-  `offers.retailer`, so add a **retailer → region** map (extends `lib/retailers.ts`), compute a
-  per-list availability %, and **soft-rank** Discover by it — never a hard filter (an expat or curious
-  viewer still sees everything). Viewer region from a manual toggle (the "Shopping in US/UK" switch),
-  defaulting to Vercel geo. First pass is already in the V3 design. — **CC**
+- **L7 — Region prioritisation** ✅ **shipped.** Discover's "Recently added" grid soft-ranks by "% of a
+  list's products purchasable in the viewer's region" (never a hard filter). Retailer→region map in
+  `lib/config.ts`/`retailers.ts`, math in `lib/region.ts`, `getListsRetailers`/`withRegionAvailability`,
+  an SSR "Shopping in US/UK" toggle (default Vercel geo), a neutral `ListCard` availability line. No
+  migration — derived from `products`/`offers.retailer`. (Region reordering surfaces once lists hold
+  retailer'd products; real scans set the retailer.) — **CC**
 
 ### Tier C — after beta
 P3 two-mode add + unresolved items · P4 "also available at" · P6 OFF enrichment · more scrape sites

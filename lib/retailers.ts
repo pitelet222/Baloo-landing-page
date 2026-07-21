@@ -48,3 +48,26 @@ export function detectRetailer(url: string): string | null {
 export function isSupportedUrl(url: string): boolean {
   return detectRetailer(url) !== null;
 }
+
+// ── Region (Order L7) ─────────────────────────────────────────────────────────────────────────
+// The market a retailer serves, used to soft-rank Discover by "% available where you shop".
+export type Region = "US" | "UK";
+
+export const REGIONS: { id: Region; label: string }[] = [
+  { id: "US", label: "US" },
+  { id: "UK", label: "UK" },
+];
+
+// The region a retailer name serves, or null if it isn't one we recognise.
+export function retailerRegion(name: string | null | undefined): Region | null {
+  if (!name) return null;
+  return SUPPORTED_RETAILERS.find((r) => r.name === name)?.region ?? null;
+}
+
+// Map a viewer's ISO country (from Vercel geolocation) to a Baloo region, or null when unknown.
+export function countryToRegion(country: string | null | undefined): Region | null {
+  const cc = (country ?? "").toUpperCase();
+  if (cc === "US") return "US";
+  if (cc === "GB" || cc === "UK") return "UK";
+  return null;
+}

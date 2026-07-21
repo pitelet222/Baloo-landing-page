@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { Suspense } from "react";
 import { db } from "@/lib/db";
-import { getPopularListsThisWeek, getPublicListsRecent } from "@/lib/db/queries/lists";
+import {
+  getPopularListsThisWeek,
+  getPublicListsRecent,
+  withRegionAvailability,
+} from "@/lib/db/queries/lists";
 import { getRecentProducts } from "@/lib/db/queries/products";
+import { REGIONS, countryToRegion, type Region } from "@/lib/retailers";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ListCard } from "@/components/lists/ListCard";
 import { SearchBox } from "@/components/discover/SearchBox";
@@ -15,7 +21,11 @@ export const metadata: Metadata = {
 
 // Browse + search (Order G5). "Popular" arrives with G7's vote signal; category landings arrive
 // with H1's catalog taxonomy — until then: search, recent lists, and new products.
-export default async function DiscoverPage() {
+export default async function DiscoverPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ region?: string }>;
+}) {
   const dbi = db();
   const [lists, products, popular] = dbi
     ? await Promise.all([
@@ -24,6 +34,13 @@ export default async function DiscoverPage() {
         getPopularListsThisWeek(dbi, 8),
       ])
     : [[], [], []];
+
+  // Viewer region (Order L7): an explicit ?region wins, else Vercel geo, else US. Country-level
+  // only — no PII, same privacy posture as the scan board. Recently-added is soft-ranked by it.
+  const sp = await searchParams;
+  const geoRegion = countryToRegion((await headers()).get("x-vercel-ip-country"));
+  const region: Region = sp.region === "US" || sp.region === "UK" ? sp.region : geoRegion ?? "US";
+  const recent = dbi ? await withRegionAvailability(dbi, lists, region) : [];
 
   return (
     <div className="relative min-h-screen">
@@ -62,18 +79,52 @@ export default async function DiscoverPage() {
         )}
 
         <section className="mt-12">
-          <h2 className="font-display text-[23px] text-ink">Recently added</h2>
-          {lists.length === 0 ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-display text-[23px] text-ink">Recently added</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted">
+                Shopping in
+              </span>
+              <div className="flex gap-1 rounded-full bg-canvas p-1">
+                {REGIONS.map((r) => (
+                  <Link
+                    key={r.id}
+                    href={`/discover?region=${r.id}`}
+                    scroll={false}
+                    aria-pressed={region === r.id}
+                    className={`rounded-full px-3 py-1 text-[13px] font-medium transition ${
+                      region === r.id
+                        ? "bg-paper text-ink shadow-card"
+                        : "text-muted hover:text-ink"
+                    }`}
+                  >
+                    {r.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+          {recent.length === 0 ? (
             <p className="mt-3 text-sm text-muted">
               No public lists yet. Paste a product link on the home tool to analyse a product,
               then save it to your first list.
             </p>
           ) : (
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {lists.map((l) => (
-                <ListCard key={l.id} list={l} handle={l.ownerHandle} />
-              ))}
-            </div>
+            <>
+              <p className="mt-2 text-xs text-muted">
+                Sorted by what you can actually buy in the {region} — nothing is hidden.
+              </p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {recent.map((l) => (
+                  <ListCard
+                    key={l.id}
+                    list={l}
+                    handle={l.ownerHandle}
+                    availability={l.availability}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </section>
 

@@ -57,9 +57,11 @@
 - [ ] **L3 — AI semantic search over public lists** (search-as-homepage; pgvector vs LLM-rerank TBD) — **CC**
 - [ ] **L6 — Save-only reconciliation** (remove list Upvote, Popular = saves) + scanned-product organisation (favourite / add-to-multiple-lists) — **CC** *(needs J's confirm)*
 - [ ] **L5a/b — Identity**: `baloo.life/@username` URL + username change with permanent redirect — **CC**
-- [ ] **L7 — Region prioritisation** *(new, 21 Jul)*: retailer→region map (extends `lib/retailers.ts`)
-      → per-list "% available in your region" → **soft-rank** Discover (never hard-filter); region from
-      the "Shopping in" toggle, default Vercel geo. Buildable on `offers.retailer`. In the V3 design. — **CC**
+- [x] **L7 — Region prioritisation** ✅ shipped: retailer→region map (`lib/config.ts`/`retailers.ts`),
+      availability math (`lib/region.ts`), `getListsRetailers` + `withRegionAvailability`, the "Shopping
+      in US/UK" toggle (SSR, default geo), and a neutral `ListCard` availability line. No migration;
+      soft-rank only. Verified (math + live query). *Note: current seed lists hold two retailer-less
+      products, so region reordering shows only once lists contain retailer'd products (real scans do).* — **CC**
 
 **V3 design review (21 Jul) — resolve before the port** *(detail in `Baloo_Launch_Plan.md`)*:
 - [ ] **DEC-1** Upvote → Save-only: design still shows Upvote; confirm removing it everywhere (=L6) — **J** *(rec: yes)*
