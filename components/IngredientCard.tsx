@@ -28,8 +28,8 @@ export function IngredientRow({
         aria-controls={bodyId}
         className="flex w-full items-center gap-3 px-4 py-3.5 text-left sm:px-5"
       >
-        <span className="w-6 shrink-0 text-[13px] tabular-nums text-muted/70">
-          {String(index + 1).padStart(2, "0")}
+        <span className="w-6 shrink-0 font-display text-[15px] tabular-nums text-muted/60">
+          {index + 1}
         </span>
 
         <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
@@ -90,16 +90,23 @@ export function IngredientRow({
         <div className="min-h-0 overflow-hidden">
           <div className="pb-4 pl-[52px] pr-5 pt-0.5 sm:pl-[56px]">
             {ingredient.what_it_is && (
-              <p className="text-sm leading-relaxed text-ink/80">{ingredient.what_it_is}</p>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+                  What it is
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-ink/80">{ingredient.what_it_is}</p>
+              </div>
             )}
             {ingredient.why_its_here && (
-              <p className="mt-2 text-sm leading-relaxed text-muted">
-                <span className="font-medium text-ink/70">In this product: </span>
-                {ingredient.why_its_here}
-              </p>
+              <div className="mt-3.5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+                  In this product
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-ink/80">{ingredient.why_its_here}</p>
+              </div>
             )}
             {ingredient.percentage_note && (
-              <p className="mt-2.5 border-t border-line pt-2.5 text-xs leading-relaxed text-muted">
+              <p className="mt-3.5 border-t border-line pt-2.5 text-xs leading-relaxed text-muted">
                 {ingredient.percentage_note}
               </p>
             )}

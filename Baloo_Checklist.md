@@ -19,7 +19,11 @@
   - [x] **L1b — homepage** ✅ shipped: V3 hero (eyebrow, italic-green "your"), `HomeSearch` dual-intent
         box (URL→analyse / text→/discover, live intent chip), nav → pills, `PopularLists` strip
         (`/api/popular`, saves-only). Verified live. *(full-width sticky shell → L1d; count view → L1c)* — **CC**
-  - [ ] **L1c — analysis view**: striking count + numbered rows (drawer variant rides with P5) — **CC** *(Mobbin: Julienne)*
+  - [x] **L1c — analysis view** ✅ shipped: hero ingredient count (big Playfair green number + subline,
+        counts in code), plain Playfair `1,2,3` rows, two-beat "What it is / In this product" expand;
+        canon gained a **Statement** type step. `role` kept (Jitain to confirm). Verified live on `/p`.
+        (drawer variant rides with P5) — **CC** *(Mobbin: Julienne)*
+  - [ ] **L1d — app shell**: full-width sticky/blur header across all pages + header search overlay — **CC**
   - [ ] Per-screen passes: lists, discover, profile, modals — **CC**
 - [ ] **L4 — Seed supply**: official accounts (@baloo/@balooteam/@proteinpicks/@kidslunchbox) + genuinely good starter lists — **M/CC**
 - [x] **L5c — Visibility auto-public** ✅ shipped: `/u/[handle]` 404s for non-owners of a 0-public-list

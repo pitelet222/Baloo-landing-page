@@ -142,6 +142,7 @@ A near-monochrome ink-on-cream palette with a single two-tone semantic accent th
 **Character:** A high-contrast editorial serif paired with a neutral humanist sans — contrast on the serif/sans axis, not two similar families. Playfair Display carries the *voice* (wordmark, page titles, card titles, the AI's answer); Inter carries the *work* (body copy, controls, labels, counts, data). The serif makes Baloo feel like a knowledgeable friend writing to you; the sans keeps the app crisp and legible.
 
 ### Hierarchy
+- **Statement** (Playfair 400–600, 52–58px, line-height ~0.85, `natural` green): The single hero *number* on the analysis screen — the ingredient count Jitain asked to "feel striking, or give a sensation that it's clean." One per screen; the deliberate exception to the counts-in-Inter rule below (a count set as the page's editorial statement, not a data field). Never used for more than one figure on a screen.
 - **Display** (Playfair 400–700, 30–40px, line-height 1.1, tracking -0.01em): Page H1s and hero headlines — "Know what's in your food.", "Discover", the feed masthead. Fixed rem sizes per breakpoint, not fluid clamps.
 - **Headline** (Playfair 400–600, 23px, line-height 1.2): Section headings — "Recently added", "Discussion".
 - **Title** (Playfair 400–600, 17–19px, line-height 1.3): Card and list-item titles; the product name.
@@ -149,7 +150,7 @@ A near-monochrome ink-on-cream palette with a single two-tone semantic accent th
 - **Label** (Inter 600, 11–12px, uppercase, tracking 0.12em): Small eyebrows and section rubrics ("Natural", day rubrics, "Explanation"). Used sparingly, as rubrics — not stacked above every section.
 
 ### Named Rules
-**The Two-Voice Rule.** Playfair Display speaks (headings, the wordmark, Baloo's "Explain this" answer); Inter works (everything you operate). Never set a button, form label, or data value in the serif.
+**The Two-Voice Rule.** Playfair Display speaks (headings, the wordmark, Baloo's "Explain this" answer); Inter works (everything you operate). Never set a button, form label, or data value in the serif — with **one exception**: the analysis screen's hero ingredient count (the **Statement** step above), where a single figure is set large in Playfair *as* the page's editorial statement. One statement number per screen; every other count and value stays in Inter.
 
 ## 4. Elevation
 

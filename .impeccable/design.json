@@ -14,6 +14,7 @@
       "cover": { "role": "neutral", "displayName": "Flat Cover Tints", "canonical": "#DCE6D5", "tonalRamp": ["#DCE6D5", "#EADFC9", "#E7D8CE", "#DFE4DE", "#E3E7D9", "#EFE4D0", "#F4EDE3", "#FDFAF6"] }
     },
     "typographyMeta": {
+      "statement": { "displayName": "Statement (Playfair Display, ~52-58px, natural green)", "purpose": "The single hero ingredient count on the analysis screen; the one exception to counts-in-Inter. One figure per screen." },
       "display": { "displayName": "Display (Playfair Display)", "purpose": "Page H1s and hero headlines. Fixed rem per breakpoint, not fluid." },
       "headline": { "displayName": "Headline (Playfair Display)", "purpose": "Section headings." },
       "title": { "displayName": "Title (Playfair Display)", "purpose": "Card and list-item titles; product name." },

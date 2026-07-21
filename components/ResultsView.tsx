@@ -41,13 +41,7 @@ export function ResultsView({
   return (
     <section className="mt-12 animate-fade-in">
       <header className="border-b border-line pb-5">
-        <p className="text-xs font-medium uppercase tracking-[0.14em] text-natural">
-          Ingredient breakdown
-        </p>
-        <h2 className="mt-2 font-display text-2xl leading-tight text-ink sm:text-3xl">
-          {productName}
-        </h2>
-        <p className="mt-1.5 text-sm text-muted">
+        <p className="text-sm text-muted">
           {retailer}
           {sourceUrl && (
             <>
@@ -63,11 +57,9 @@ export function ResultsView({
             </>
           )}
         </p>
-        <p className="mt-3 text-sm text-muted">
-          <span className="font-medium text-ink/70">{count}</span>{" "}
-          {count === 1 ? "ingredient" : "ingredients"}, in label order — listed most to least by
-          quantity.
-        </p>
+        <h2 className="mt-1.5 font-display text-2xl leading-tight text-ink sm:text-3xl">
+          {productName}
+        </h2>
       </header>
 
       {/* Tabs per the design handoff: Ingredients / Nutrition / Processing (Soon, disabled). */}
@@ -121,7 +113,12 @@ export function ResultsView({
           </div>
         ) : (
           <>
-            <ReadStrip ingredients={ingredients} summary={productSummary} loading={loading} />
+            <CountLede
+              count={count}
+              ingredients={ingredients}
+              summary={productSummary}
+              loading={loading}
+            />
 
             {/* One container, not one card per ingredient — an index, not a stack. */}
             <ul className="mt-4 overflow-hidden rounded-2xl border border-line bg-paper shadow-card [&>li+li]:border-t [&>li+li]:border-line">
@@ -150,57 +147,53 @@ export function ResultsView({
   );
 }
 
-// The product read strip (Order F2): live counts, the one-sentence product summary, and the
-// reassurance line. Plain typography on canvas — a table of contents, not a report card.
-// Counts are computed here in code; the model never counts (CLAUDE.md).
-function ReadStrip({
+// The striking count lede (Order L1c, V3) — the number is the hero of the analysis view: it should
+// "feel striking, or give a sensation that it's clean" (Jitain). `count` is the total from extract,
+// known up-front so the big number is there immediately even mid-stream; natural/processed grow as
+// tags stream in. Counts are computed HERE in code; the model never counts (CLAUDE.md).
+function CountLede({
+  count,
   ingredients,
   summary,
   loading,
 }: {
+  count: number;
   ingredients: Partial<Ingredient>[];
   summary?: string;
   loading: boolean;
 }) {
-  const total = ingredients.length;
   const natural = ingredients.filter((i) => i.tag === "Natural").length;
   const processed = ingredients.filter((i) => i.tag === "Processed").length;
 
   return (
-    <div className="mt-5">
-      <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[13px] tabular-nums text-muted">
-        <span className="font-medium text-ink">
-          {total} {total === 1 ? "ingredient" : "ingredients"}
+    <div className="mt-6">
+      <div className="flex items-end gap-3">
+        <span className="font-display text-[52px] leading-[0.82] text-natural tabular-nums sm:text-[58px]">
+          {count}
         </span>
-        <span aria-hidden className="text-line">
-          ·
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-natural" />
-          {natural} natural
-        </span>
-        <span aria-hidden className="text-line">
-          ·
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-processed" />
-          {processed} processed
-        </span>
-      </p>
+        <div className="pb-1.5">
+          <p className="font-display text-xl leading-tight text-ink sm:text-[23px]">
+            {count === 1 ? "ingredient" : "ingredients"} in this product
+          </p>
+          <p className="mt-1 text-sm tabular-nums text-muted">
+            In label order — {natural} natural, {processed} processed
+          </p>
+        </div>
+      </div>
 
       {summary ? (
-        <p className="mt-2.5 animate-rise text-[15px] leading-[1.6] text-ink/80">{summary}</p>
+        <p className="mt-4 animate-rise text-[15px] leading-[1.6] text-ink/80">{summary}</p>
       ) : (
         loading && (
-          <p className="mt-2.5 flex items-center gap-2 text-[13px] text-muted">
+          <p className="mt-4 flex items-center gap-2 text-sm text-muted">
             <Spinner className="h-3.5 w-3.5" />
             Reading the formulation…
           </p>
         )
       )}
 
-      <p className="mt-2.5 text-xs text-muted">
-        An explanation, not a verdict — tap any ingredient for the full story.
+      <p className="mt-3 text-xs text-muted">
+        Tap any ingredient to see what it is and why it&rsquo;s here.
       </p>
     </div>
   );

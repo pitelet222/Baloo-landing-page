@@ -6,6 +6,18 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **L1c — V3 analysis view (design port, slice 3):** the analysis screen Jitain singled out. The
+  ingredient count is now the **hero of the screen** — a big Playfair `natural`-green number (58px) +
+  "ingredients in this product" (Playfair 23px) + an "In label order — N natural, N processed"
+  subline (counts computed in code, never the model). The `ReadStrip` line folds into this
+  `CountLede` block; `count` comes from extract so the number is striking immediately, even mid-stream.
+  Rows lose the `01` zero-pad for a plain Playfair `1, 2, 3`; the tap-expand becomes V3's **two-beat**
+  labelled blocks — uppercase "What it is" / "In this product" rubrics over each text (each beat
+  hides when its field is empty). Design canon gained a documented **Statement** type step (the one
+  Playfair-number-as-statement exception to counts-in-Inter). Verified live on `/p/oatly-…`:
+  count = Playfair 58px `rgb(46,125,82)`, plain row numbers, both beats render, Nutrition tab intact,
+  console clean. The `role` microlabel was **kept** (documented F rule) — V3's row drops it; Jitain to
+  confirm. L1d (sticky app shell + header search overlay) + per-screen passes still open.
 - **L1b — V3 homepage (design port, slice 2):** rebuilt the homepage to the V3 layout. New
   `HomeSearch` is the locked dual-intent box — paste a URL → analyse (existing flow); type anything
   else → `/discover` search (keyword now, L3 semantic later) — with a live intent chip. V3 hero

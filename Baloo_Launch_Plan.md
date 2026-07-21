@@ -36,8 +36,14 @@ where they overlap, **this ordering wins for launch**. Working board: the `Baloo
     darkened to hold WCAG AA on cream. Blockers were already resolved, Mobbin refs logged.
   - **L1b ✅ shipped** — V3 homepage: hero (eyebrow + italic-green "your"), the `HomeSearch`
     dual-intent box (URL→analyse / text→/discover search, live intent chip), pill nav, and a
-    saves-only "Popular lists this week" strip. **L1c** analysis view: striking count + numbered
-    rows. **L1d** the full-width sticky/blur app shell (across all pages) + header search overlay.
+    saves-only "Popular lists this week" strip.
+  - **L1c ✅ shipped** — V3 analysis view: the ingredient **count is the hero** (big Playfair green
+    number + "ingredients in this product" + "In label order — N natural, N processed" subline,
+    counts in code), plain Playfair `1,2,3` row numbers, and the tap-expand as V3's **two-beat**
+    "What it is" / "In this product" labelled blocks. Canon gained a documented **Statement** type
+    step (the Playfair-number exception to counts-in-Inter). `role` microlabel kept (Jitain to
+    confirm vs V3 dropping it). — **CC**
+  - **L1d** the full-width sticky/blur app shell (across all pages) + header search overlay.
     Then per-screen passes (lists, discover, profile, modals).
 - **L4 — Seed supply.** Official accounts (**@baloo, @balooteam, @proteinpicks, @kidslunchbox**) + a
   set of genuinely good curated lists (Best protein yogurts · Cereals I'd buy again · Ice creams
