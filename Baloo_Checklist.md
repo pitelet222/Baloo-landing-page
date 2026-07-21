@@ -57,8 +57,17 @@
 - [ ] **L3 — AI semantic search over public lists** (search-as-homepage; pgvector vs LLM-rerank TBD) — **CC**
 - [ ] **L6 — Save-only reconciliation** (remove list Upvote, Popular = saves) + scanned-product organisation (favourite / add-to-multiple-lists) — **CC** *(needs J's confirm)*
 - [ ] **L5a/b — Identity**: `baloo.life/@username` URL + username change with permanent redirect — **CC**
+- [ ] **L7 — Region prioritisation** *(new, 21 Jul)*: retailer→region map (extends `lib/retailers.ts`)
+      → per-list "% available in your region" → **soft-rank** Discover (never hard-filter); region from
+      the "Shopping in" toggle, default Vercel geo. Buildable on `offers.retailer`. In the V3 design. — **CC**
 
-**Decisions still owed from Jitain** (in `Baloo_Launch_Plan.md`): Upvote→Save removal · comments/feed/moderation
+**V3 design review (21 Jul) — resolve before the port** *(detail in `Baloo_Launch_Plan.md`)*:
+- [ ] **DEC-1** Upvote → Save-only: design still shows Upvote; confirm removing it everywhere (=L6) — **J** *(rec: yes)*
+- [ ] **DEC-2** Auth flow: V3 shows magic-link + drops Google/guest; we shipped password+Google+guest — **J** *(rec: keep built methods, fix the design)*
+- [ ] **FIX-1** Share cards still use gradients → apply the V3 flat tints — **CD**
+- [ ] Open (non-blocking): list-image direction (upload/auto-gen/shrink) · board real imagery · 2nd "create list with THIS product" CTA
+
+**Decisions still owed from Jitain** (in `Baloo_Launch_Plan.md`): Upvote→Save removal (DEC-1) · auth flow (DEC-2) · comments/feed/moderation
 at launch · semantic-search infra · `/@username` URL cutover timing · keep guest mode (rec: yes, but
 guests can't publish) · email default (rec: digest-only) · deleted accounts — keep public lists with the
 curator anonymised (rec) or delete · who owns privacy policy + terms.

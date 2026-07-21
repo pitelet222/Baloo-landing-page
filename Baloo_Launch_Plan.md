@@ -82,10 +82,33 @@ Three holes the audit found in shipped code:
   save/add an individual product to your own (keep-for-later).
 - **L5a/b — Identity for distribution.** `baloo.life/@username` URL (profile at `/@handle`, redirect
   the current `/u/[handle]`); username change + permanent redirect.
+- **L7 — Region prioritisation** *(new, from Jitain + the V3 design).* Sort Discover by "% of a list's
+  products purchasable in the viewer's region." Buildable on the existing model: every product carries
+  `offers.retailer`, so add a **retailer → region** map (extends `lib/retailers.ts`), compute a
+  per-list availability %, and **soft-rank** Discover by it — never a hard filter (an expat or curious
+  viewer still sees everything). Viewer region from a manual toggle (the "Shopping in US/UK" switch),
+  defaulting to Vercel geo. First pass is already in the V3 design. — **CC**
 
 ### Tier C — after beta
 P3 two-mode add + unresolved items · P4 "also available at" · P6 OFF enrichment · more scrape sites
 (gradually) · M1 native IG Stories · discovery feed de-emphasis.
+
+## V3 design review (21 July) — resolve before the port
+V3 is past wireframe (real cream + Playfair look) and lands most of Jitain's notes: ingredient view is
+back to the count + numbered rows + tap-to-expand two-box, empty-state leads with **Add product**,
+new-list dialog is centred, own-list header is cleaned up (no handle/Save, 0-upvotes hidden), covers
+are flat tints, and Discover has the region switch. **Resolve these three before porting — porting
+around them means porting twice:**
+- **DEC-1 · Upvote → Save-only.** The design still shows Upvote (card counts + a list-detail button);
+  the locked decision is Save-only. Confirm removing Upvote everywhere (design **and** code = L6).
+  *Rec: yes.* — **J**
+- **DEC-2 · Auth flow.** V3's modal shows magic-link ("no password needed") and drops Google + guest;
+  we shipped **email+password + Google + guest**, and magic-link would need S3 SMTP. *Rec: keep the
+  built methods for launch; correct the design's auth modal to match.* — **J**
+- **FIX-1 · Share cards still use gradients** (contradicts the global no-gradient rule) → apply the V3
+  flat-tint palette. Straight back to Claude Design. — **CD**
+- Open threads (non-blocking): list-image direction (upload / auto-generate / shrink — Jitain leans
+  shrink); the board's real-imagery treatment; the 2nd "create a list with THIS product" CTA.
 
 ## Open decisions still owed (recorded for Jitain)
 - **Upvote vs Save.** Shipped code (G7) has BOTH an Upvote and a Save. "Save-only" implies
