@@ -37,6 +37,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { handle } = await params;
   const data = await load(handle);
   if (!data) return { title: "Baloo" };
+  // L5c: a profile with no public lists is private — don't leak its name/bio to crawlers or social.
+  const publicLists = await getPublicListsByOwnerWithCounts(data.dbi, data.profile.id);
+  if (publicLists.length === 0) return { title: "Baloo" };
   return {
     title: `@${data.profile.handle} — Baloo`,
     description:
@@ -57,6 +60,9 @@ export default async function ProfilePage({ params, searchParams }: Params) {
   const lists = isOwner
     ? await getListsByOwnerWithCounts(dbi, profile.id)
     : await getPublicListsByOwnerWithCounts(dbi, profile.id);
+  // L5c: a profile is private until it has ≥1 public list — publishing a list joins the community.
+  // For a non-owner `lists` is already public-only, so an empty list = no public lists = private.
+  if (!isOwner && lists.length === 0) notFound();
   const savedLists =
     activeTab === "saved"
       ? await getSavedListsWithCounts(dbi, profile.id, { publicOnly: !isOwner })
@@ -92,7 +98,8 @@ export default async function ProfilePage({ params, searchParams }: Params) {
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <ShareButton path={`/u/${profile.handle}`} />
+              {/* Nothing public to share until the profile is public (L5c). */}
+              {publicCount > 0 && <ShareButton path={`/u/${profile.handle}`} />}
               <FollowButton profileId={profile.id} initialFollowing={viewerFollows} />
             </div>
           </div>
@@ -107,6 +114,12 @@ export default async function ProfilePage({ params, searchParams }: Params) {
             {counts.followers === 1 ? "follower" : "followers"} · {counts.following} following ·{" "}
             {publicCount} public {publicCount === 1 ? "list" : "lists"}
           </p>
+          {isOwner && publicCount === 0 && (
+            <p className="mt-4 rounded-xl border border-line bg-canvas px-4 py-3 text-sm text-muted">
+              Your profile is private. <span className="font-medium text-ink">Publish a list</span> to
+              make it discoverable.
+            </p>
+          )}
         </section>
 
         {/* Tabs — Saved went live with Order G7 (link-tabs, SSR). */}

@@ -14,7 +14,9 @@
 **Tier A — beta-blocking:**
 - [ ] **L1 — V3 design port** (starts with Mobbin refs + app shell; PART C ritual; design the dual-intent search box) — **CC/CD/M**
 - [ ] **L4 — Seed supply**: official accounts (@baloo/@balooteam/@proteinpicks/@kidslunchbox) + genuinely good starter lists — **M/CC**
-- [ ] **L5c — Visibility auto-public**: profile public only when ≥1 public list, else private — **CC**
+- [x] **L5c — Visibility auto-public** ✅ shipped: `/u/[handle]` 404s for non-owners of a 0-public-list
+      profile + generic metadata; owner sees own + a "publish to go public" nudge (Share hidden).
+      Discovery surfaces already compliant. Verified (non-owner 404 / owner nudge / public unaffected). — **CC**
 - [ ] **L2 — Social sharing** (= P8, pulled forward): IG card via `navigator.share` + WhatsApp/Telegram/FB intents + sharing-card template — **CC**
 
 **Tier A — security (17 July audit; a beta with real users needs these):**
@@ -63,11 +65,11 @@
       soft-rank only. Verified (math + live query). *Note: current seed lists hold two retailer-less
       products, so region reordering shows only once lists contain retailer'd products (real scans do).* — **CC**
 
-**V3 design review (21 Jul) — resolve before the port** *(detail in `Baloo_Launch_Plan.md`)*:
-- [ ] **DEC-1** Upvote → Save-only: design still shows Upvote; confirm removing it everywhere (=L6) — **J** *(rec: yes)*
-- [ ] **DEC-2** Auth flow: V3 shows magic-link + drops Google/guest; we shipped password+Google+guest — **J** *(rec: keep built methods, fix the design)*
-- [ ] **FIX-1** Share cards still use gradients → apply the V3 flat tints — **CD**
-- [ ] Open (non-blocking): list-image direction (upload/auto-gen/shrink) · board real imagery · 2nd "create list with THIS product" CTA
+**V3 design review — ✅ resolved 21 Jul; the port (L1) is unblocked** *(detail in `Baloo_Launch_Plan.md`)*:
+- [x] **DEC-1** Upvote → Save-only — reflected in the updated V3 (upvote gone, `saves` used). Code side = L6.
+- [x] **DEC-2** Auth flow — updated V3 modal now shows email+password + Google + guest, matching shipped code.
+- [x] **FIX-1** Share cards — gradients removed, flat V3 tints applied. — **CD done**
+- [ ] Still open (non-blocking): list-image direction (upload/auto-gen/shrink) · board real imagery · 2nd "create list with THIS product" CTA
 
 **Decisions still owed from Jitain** (in `Baloo_Launch_Plan.md`): Upvote→Save removal (DEC-1) · auth flow (DEC-2) · comments/feed/moderation
 at launch · semantic-search infra · `/@username` URL cutover timing · keep guest mode (rec: yes, but

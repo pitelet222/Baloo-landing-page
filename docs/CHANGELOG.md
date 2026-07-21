@@ -6,6 +6,11 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **L5c — visibility auto-public:** a profile is private until it has ≥1 public list. `/u/[handle]`
+  now `notFound()`s for non-owners of a 0-public-list profile, `generateMetadata` goes generic when
+  private (no name/bio leak), and the owner gets a "publish a list to go public" nudge (Share hidden).
+  Discovery surfaces were already compliant (search returns no profiles; suggested-curators inner-joins
+  public lists). Verified: non-owner 404, owner nudge, public profiles unaffected.
 - **L7 — region prioritisation:** Discover's "Recently added" grid soft-ranks by "% of a list's
   products purchasable in the viewer's region" — a retailer→region map (`lib/config.ts` +
   `lib/retailers.ts`), availability math (`lib/region.ts`), a batch composition query

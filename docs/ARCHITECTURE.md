@@ -162,6 +162,11 @@ DENY · X-Content-Type-Options nosniff · Referrer-Policy · Permissions-Policy 
 ships **report-only** (`connect-src` carries the Supabase origin from env). Report-only is currently
 clean (no violations), so flipping to enforcing later is low-risk.
 
+**Profile visibility** (Order L5c): a profile is public only once it has ≥1 public list. `/u/[handle]`
+`notFound()`s for non-owners of a 0-public-list profile and its metadata goes generic; owners always
+see their own (with a "publish to go public" nudge). Discovery surfaces already enforce this (search
+returns no profiles; `getSuggestedCurators` inner-joins public lists).
+
 > **Still planned (S-series, `Baloo_Launch_Plan.md`):** captcha/Turnstile (deferred — Cloudflare +
 > Supabase setup), write volume caps (S4), security headers + WAF (S5), monitoring (S6), account
 > deletion + unsubscribe (S7).

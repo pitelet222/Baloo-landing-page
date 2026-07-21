@@ -36,8 +36,11 @@ where they overlap, **this ordering wins for launch**. Working board: the `Baloo
 - **L4 — Seed supply.** Official accounts (**@baloo, @balooteam, @proteinpicks, @kidslunchbox**) + a
   set of genuinely good curated lists (Best protein yogurts · Cereals I'd buy again · Ice creams
   under 5 ingredients · Best snacks for kids · Mercadona essentials). An empty community is a dead one.
-- **L5c — Visibility auto-public.** Profile public only when ≥1 public list; else private/undiscoverable.
-  A privacy must before real users touch it.
+- **L5c — Visibility auto-public.** ✅ **shipped.** A profile is public only once it has ≥1 public list;
+  `/u/[handle]` 404s for non-owners of a 0-public-list profile (generic metadata, no name/bio leak),
+  the owner sees their own with a "publish a list to go public" nudge, and Share is hidden until then.
+  Discovery surfaces already enforced it (search returns no profiles; suggested-curators inner-joins
+  public lists). No migration. — **CC**
 - **L2 — Social sharing (= P8, pulled forward).** IG card via `navigator.share({files})` + WhatsApp
   / Telegram / Facebook intent URLs + the sharing-card template (the OG image at `/api/og/list/[slug]`
   already exists). Jitain's #1 ASAP; the growth loop.
@@ -93,22 +96,18 @@ Three holes the audit found in shipped code:
 P3 two-mode add + unresolved items · P4 "also available at" · P6 OFF enrichment · more scrape sites
 (gradually) · M1 native IG Stories · discovery feed de-emphasis.
 
-## V3 design review (21 July) — resolve before the port
-V3 is past wireframe (real cream + Playfair look) and lands most of Jitain's notes: ingredient view is
-back to the count + numbered rows + tap-to-expand two-box, empty-state leads with **Add product**,
-new-list dialog is centred, own-list header is cleaned up (no handle/Save, 0-upvotes hidden), covers
-are flat tints, and Discover has the region switch. **Resolve these three before porting — porting
-around them means porting twice:**
-- **DEC-1 · Upvote → Save-only.** The design still shows Upvote (card counts + a list-detail button);
-  the locked decision is Save-only. Confirm removing Upvote everywhere (design **and** code = L6).
-  *Rec: yes.* — **J**
-- **DEC-2 · Auth flow.** V3's modal shows magic-link ("no password needed") and drops Google + guest;
-  we shipped **email+password + Google + guest**, and magic-link would need S3 SMTP. *Rec: keep the
-  built methods for launch; correct the design's auth modal to match.* — **J**
-- **FIX-1 · Share cards still use gradients** (contradicts the global no-gradient rule) → apply the V3
-  flat-tint palette. Straight back to Claude Design. — **CD**
-- Open threads (non-blocking): list-image direction (upload / auto-generate / shrink — Jitain leans
-  shrink); the board's real-imagery treatment; the 2nd "create a list with THIS product" CTA.
+## V3 design review (21 July) — ✅ resolved; the port (L1) is unblocked
+V3 is past wireframe (real cream + Playfair) and lands Jitain's notes (ingredient view back to the
+count + numbered rows + tap-to-expand two-box, empty-state **Add product**, centred new-list dialog,
+own-list header cleanup, flat covers, region switch). The three blockers are now resolved in Claude
+Design's updated files:
+- **DEC-1 · Upvote → Save-only** ✅ — the updated V3 drops upvote entirely (state is `saves`). Code
+  side is **L6** (remove the shipped Upvote; Popular = saves).
+- **DEC-2 · Auth flow** ✅ — the V3 modal now shows **email+password + Continue with Google + Continue
+  without an account**, matching the shipped methods (no magic-link, no S3 dependency).
+- **FIX-1 · Share-card gradients** ✅ — removed; flat V3 tints applied.
+- Still open (non-blocking, for the port): list-image direction (upload / auto-generate / shrink —
+  Jitain leans shrink); the board's real-imagery treatment; the 2nd "create a list with THIS product" CTA.
 
 ## Open decisions still owed (recorded for Jitain)
 - **Upvote vs Save.** Shipped code (G7) has BOTH an Upvote and a Save. "Save-only" implies
