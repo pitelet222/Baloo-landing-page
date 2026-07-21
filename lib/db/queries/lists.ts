@@ -180,10 +180,10 @@ export async function getPublicListsByOwnerWithCounts(
 
 export type ListWithCountsAndOwner = ListWithCounts & { ownerHandle: string | null };
 
-// "Popular this week" (Order G7 unlocks G5's deferred section): public lists ranked by
-// engagement signal — saves + list-upvotes created in the last 7 days, equal weight, recency
-// tie-break. One query; the weighting is trivially tunable here without touching callers.
-// Returns [] when there's no signal — the section hides rather than faking a ranking.
+// "Popular this week" (Order G7; Save-only since L6): public lists ranked by SAVES created in
+// the last 7 days — Save is the one social signal on a list, so it's also the one ranking
+// signal. Recency tie-break. Returns [] when there's no signal — the section hides rather than
+// faking a ranking.
 export async function getPopularListsThisWeek(
   dbi: Db,
   limit = 8,
@@ -191,7 +191,6 @@ export async function getPopularListsThisWeek(
   const weekAgo = sql`now() - interval '7 days'`;
   const signalExpr = sql<number>`(
     (select count(*)::int from ${saves} s where s.list_id = ${lists.id} and s.created_at > ${weekAgo})
-    + (select count(*)::int from votes v where v.target_type = 'list' and v.target_id = ${lists.id} and v.created_at > ${weekAgo})
   )`;
   const rows = await dbi
     .select({

@@ -80,9 +80,11 @@ Three holes the audit found in shipped code:
   community lever. Approach decided at plan time (pgvector embeddings on Supabase vs LLM-rerank over
   pg_trgm candidates). Semantic, not keyword — "cereals my 5-year-old can eat" must match
   "low-sugar kids cereals".
-- **L6 — Save-only reconciliation + scanned-product organisation.** Remove the list Upvote
-  (Popular = saves); "save product as favourite"; "add to multiple lists"; from another user's list,
-  save/add an individual product to your own (keep-for-later).
+- **L6 — Save-only reconciliation.** ✅ **Upvote removal shipped**: votes API narrowed to comments
+  (product/list → 400), mounts gone from the list + product pages, Popular ranks by saves alone, the
+  feed drops "upvoted" stories; comment upvotes stay (Top sort). Non-destructive (historical rows
+  kept). **Remainder open:** scanned-product organisation — save product as favourite,
+  add-to-multiple-lists, keep-for-later (needs schema; rides with P3/the port).
 - **L5a/b — Identity for distribution.** `baloo.life/@username` URL (profile at `/@handle`, redirect
   the current `/u/[handle]`); username change + permanent redirect.
 - **L7 — Region prioritisation** ✅ **shipped.** Discover's "Recently added" grid soft-ranks by "% of a

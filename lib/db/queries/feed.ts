@@ -25,14 +25,9 @@ export type FeedArticle =
       list: FeedListRef;
       products: FeedProductRef[]; // may be empty for pre-G6 rows (meta-less) → count-only copy
       count: number;
-    }
-  | {
-      // Byline-only (D-G6 §3b / Order G7): votes stay quiet or the feed becomes a scoreboard.
-      kind: "voted";
-      ts: string;
-      actor: FeedActor;
-      targets: { type: "product" | "list"; name: string; slug: string }[];
     };
+// (The "voted" article kind left with L6 — Save-only. Historical voted activity rows remain in
+// the table but are no longer queried or rendered.)
 
 export type FeedPage = { articles: FeedArticle[]; nextBefore: string | null };
 
@@ -49,7 +44,7 @@ export async function getFeed(
 
   const conditions = [
     inArray(activity.actorId, followingIds),
-    inArray(activity.verb, ["created_list", "added_item", "voted"]),
+    inArray(activity.verb, ["created_list", "added_item"]),
     ...(opts.before ? [lt(activity.createdAt, opts.before)] : []),
   ];
 
@@ -61,27 +56,15 @@ export async function getFeed(
     .orderBy(desc(activity.createdAt))
     .limit(RAW_BATCH);
 
-  // Hydrate referenced lists + products in two bulk lookups. voted rows reference either type
-  // via objectType; list-verbs always reference a list.
-  const listIds = [
-    ...new Set(
-      rows
-        .filter((r) => r.act.verb !== "voted" || r.act.objectType === "list")
-        .map((r) => r.act.objectId),
-    ),
-  ];
+  // Hydrate referenced lists + products in two bulk lookups; both remaining verbs reference a list.
+  const listIds = [...new Set(rows.map((r) => r.act.objectId))];
   const listRows = listIds.length
     ? await dbi.select().from(lists).where(inArray(lists.id, listIds))
     : [];
   const listMap = new Map(listRows.map((l) => [l.id, l]));
 
   const productIds = [
-    ...new Set([
-      ...rows.map((r) => r.act.meta?.productId).filter((x): x is string => !!x),
-      ...rows
-        .filter((r) => r.act.verb === "voted" && r.act.objectType === "product")
-        .map((r) => r.act.objectId),
-    ]),
+    ...new Set(rows.map((r) => r.act.meta?.productId).filter((x): x is string => !!x)),
   ];
   const productRows = productIds.length
     ? await dbi.select().from(products).where(inArray(products.id, productIds))
@@ -100,38 +83,11 @@ export async function getFeed(
 
   const articles: FeedArticle[] = [];
   const addGroups = new Map<string, FeedArticle & { kind: "added_items" }>();
-  const voteGroups = new Map<string, FeedArticle & { kind: "voted" }>();
   let oldest: Date | null = null;
 
   for (const { act, actor } of rows) {
     oldest = act.createdAt;
     const actorRef = { handle: actor.handle, displayName: actor.displayName };
-
-    // Votes: byline-only, aggregated per actor+day (G7).
-    if (act.verb === "voted") {
-      let target: { type: "product" | "list"; name: string; slug: string } | null = null;
-      if (act.objectType === "product") {
-        const p = productMap.get(act.objectId);
-        if (p) target = { type: "product", name: p.name, slug: p.slug };
-      } else if (act.objectType === "list") {
-        const l = listMap.get(act.objectId);
-        if (l && (l.isPublic || l.ownerId === userId)) {
-          target = { type: "list", name: l.title, slug: l.slug };
-        }
-      }
-      if (!target) continue;
-      const day = act.createdAt.toISOString().slice(0, 10);
-      const key = `${actor.handle}:${day}`;
-      let group = voteGroups.get(key);
-      if (!group) {
-        group = { kind: "voted", ts: act.createdAt.toISOString(), actor: actorRef, targets: [] };
-        voteGroups.set(key, group);
-        articles.push(group);
-      }
-      if (!group.targets.some((t) => t.slug === target!.slug)) group.targets.push(target);
-      if (articles.length >= limit) break;
-      continue;
-    }
 
     const list = listMap.get(act.objectId);
     if (!list) continue; // deleted since — skip silently

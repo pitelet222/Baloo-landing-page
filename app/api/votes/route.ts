@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { requireVerifiedUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { toggleVote, type VotableType } from "@/lib/db/queries/votes";
-import { recordActivity } from "@/lib/db/queries/activity";
 
-const VOTABLE: VotableType[] = ["product", "list", "comment"];
+// Save-only (Order L6): lists and products carry ONE social signal — Save. Upvotes survive only
+// as comment agreement (they drive the thread's "Top" sort); product/list votes are rejected.
+// Single direction — there is no downvote, by design. Comment votes are too light for the feed,
+// so this route writes no activity.
+const VOTABLE: VotableType[] = ["comment"];
 
-// Upvote toggle (Order G7). Single direction — there is no downvote, by design. An upvote is
-// feed-worthy (voted activity row); removing one isn't (history is history).
 export async function POST(req: Request) {
   const gate = await requireVerifiedUser();
   if ("error" in gate) return gate.error;
@@ -26,14 +27,5 @@ export async function POST(req: Request) {
   }
 
   const result = await toggleVote(dbi, gate.user.id, targetType, body.targetId);
-  // Product/list upvotes are feed-worthy; a comment upvote is too light to be news.
-  if (result.voted && targetType !== "comment") {
-    await recordActivity(dbi, {
-      actorId: gate.user.id,
-      verb: "voted",
-      objectType: targetType,
-      objectId: body.targetId,
-    });
-  }
   return NextResponse.json(result);
 }

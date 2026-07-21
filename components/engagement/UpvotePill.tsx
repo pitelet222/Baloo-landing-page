@@ -1,6 +1,7 @@
 "use client";
 
-// Upvote (Order G7, D-G7/G8 handoff §2). One direction only — agreement, not a rating; there is
+// Comment upvote (Order G7; comment-only since L6 — Save is the one signal on lists/products).
+// Agreement inside a discussion, drives the thread's "Top" sort. One direction only — there is
 // deliberately NO downvote. Neutral ink-tinted states: green/amber stay reserved for ingredient
 // classification. Colour-only ~0.2s transition — Baloo doesn't press-animate.
 
@@ -12,15 +13,13 @@ export function UpvotePill({
   targetId,
   initialCount,
   initialVoted,
-  withLabel = false,
   size = "sm",
 }: {
-  targetType: "product" | "list" | "comment";
+  targetType: "comment";
   targetId: string;
   initialCount: number;
   initialVoted: boolean;
-  withLabel?: boolean; // the product bar spells out "Upvote"
-  size?: "xs" | "sm" | "md";
+  size?: "xs" | "sm";
 }) {
   const { available, ensureVerified, promptUpgrade, modal } = useAuthGate();
   const [voted, setVoted] = useState(initialVoted);
@@ -59,13 +58,8 @@ export function UpvotePill({
     }
   }
 
-  const pad =
-    size === "md"
-      ? "px-4 py-1.5 text-[13px]"
-      : size === "xs"
-        ? "px-2 py-0.5 text-[11px]"
-        : "px-3 py-1 text-xs";
-  const glyph = size === "md" ? "h-3.5 w-3.5" : size === "xs" ? "h-2.5 w-2.5" : "h-3 w-3";
+  const pad = size === "xs" ? "px-2 py-0.5 text-[11px]" : "px-3 py-1 text-xs";
+  const glyph = size === "xs" ? "h-2.5 w-2.5" : "h-3 w-3";
 
   return (
     <>
@@ -92,7 +86,6 @@ export function UpvotePill({
         >
           <path d="M2.5 7.5L6 4l3.5 3.5" />
         </svg>
-        {withLabel && <span>Upvote</span>}
         <span className="tabular-nums">{count}</span>
       </button>
       {modal}

@@ -57,7 +57,12 @@
 - [ ] **N2 — Email notifications** *(needs S3)* — same events, **digest-batched**, prefs + opt-out;
       default digest-only, never per-event blasting — **CC**
 - [ ] **L3 — AI semantic search over public lists** (search-as-homepage; pgvector vs LLM-rerank TBD) — **CC**
-- [ ] **L6 — Save-only reconciliation** (remove list Upvote, Popular = saves) + scanned-product organisation (favourite / add-to-multiple-lists) — **CC** *(needs J's confirm)*
+- [x] **L6 (upvote removal) — Save-only** ✅ shipped: votes API = comments only (product/list → 400),
+      UpvotePill mounts gone from list + product pages, Popular = saves alone, feed drops "upvoted"
+      stories. Comment upvotes kept (Top sort). Non-destructive, no migration. Verified E2E. — **CC**
+- [ ] **L6 (remainder) — scanned-product organisation**: save product as favourite ·
+      add-to-multiple-lists · keep-for-later. Needs schema (saves are list-scoped today); rides with
+      P3 / the V3 port. — **CC**
 - [ ] **L5a/b — Identity**: `baloo.life/@username` URL + username change with permanent redirect — **CC**
 - [x] **L7 — Region prioritisation** ✅ shipped: retailer→region map (`lib/config.ts`/`retailers.ts`),
       availability math (`lib/region.ts`), `getListsRetailers` + `withRegionAvailability`, the "Shopping

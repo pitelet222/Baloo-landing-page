@@ -8,10 +8,8 @@ import { getSessionUser } from "@/lib/auth";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ListCover } from "@/components/lists/ListCover";
 import { ShareButton } from "@/components/lists/ShareButton";
-import { UpvotePill } from "@/components/engagement/UpvotePill";
 import { SavePill } from "@/components/engagement/SavePill";
 import { ReportControl } from "@/components/ReportControl";
-import { getVoteCount, hasVoted } from "@/lib/db/queries/votes";
 import { isSaved } from "@/lib/db/queries/saves";
 
 // Public list page (Order G4) — the shareable growth surface. SSR from Postgres. A private list
@@ -54,10 +52,8 @@ export default async function ListPage({ params }: Params) {
   const isOwner = !!viewer && viewer.id === list.ownerId;
   if (!list.isPublic && !isOwner) notFound(); // private → owner only
 
-  // Engagement state (Order G7), SSR-hydrated.
+  // Engagement state (Order G7; Save-only since L6), SSR-hydrated.
   const dbi = db()!;
-  const voteCount = await getVoteCount(dbi, "list", list.id);
-  const viewerVoted = viewer ? await hasVoted(dbi, viewer.id, "list", list.id) : false;
   const viewerSaved = viewer ? await isSaved(dbi, viewer.id, list.id) : false;
 
   return (
@@ -108,12 +104,7 @@ export default async function ListPage({ params }: Params) {
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
-              <UpvotePill
-                targetType="list"
-                targetId={list.id}
-                initialCount={voteCount}
-                initialVoted={viewerVoted}
-              />
+              {/* Save is the ONE social signal on a list (L6) — no upvote. */}
               <SavePill listId={list.id} initialSaved={viewerSaved} />
               <ShareButton path={`/list/${list.slug}`} />
               {!isOwner && <ReportControl targetType="list" targetId={list.id} />}

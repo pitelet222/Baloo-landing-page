@@ -96,7 +96,10 @@ without `DATABASE_URL`. Connects as `postgres` (via the transaction pooler, `pre
 **Identity & social**
 - `profiles` — `id` is a **FK to `auth.users.id`** (Supabase Auth). Handle, display name, `is_admin`.
 - `lists` / `list_items` — user-curated collections; `slug`, public/private, ordered items.
-- `follows` · `saves` · `votes` — the social graph and signals.
+- `follows` · `saves` · `votes` — the social graph and signals. **Save is the ONE signal on lists
+  and products (Order L6)**; votes survive only as comment agreement (the thread's "Top" sort), and
+  "Popular this week" ranks by saves alone. Historical product/list vote rows remain but are never
+  written or shown.
 - `comments` — threaded; soft-hidden via `hidden_at`/`hidden_by` (moderation tombstones).
 - `activity` — append-only event log (`verb` + `meta` jsonb) powering the feed **and** the seed for
   notifications.

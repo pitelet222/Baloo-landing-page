@@ -6,6 +6,12 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **L6 — Save-only (upvote removal):** the product/list Upvote is gone — Save is the one social
+  signal. Votes API narrowed to comments (product/list → 400), the UpvotePill mounts removed from
+  the list + product pages, "Popular this week" ranks by saves alone, and the feed no longer shows
+  "upvoted" stories. Comment upvotes stay (they drive the thread's Top sort). Non-destructive — no
+  migration, historical vote rows kept. Verified: API matrix (400/400/200-toggle), all pages, no
+  console errors. *Remainder still open: product-favouriting + add-to-multiple-lists (needs schema).*
 - **L5c — visibility auto-public:** a profile is private until it has ≥1 public list. `/u/[handle]`
   now `notFound()`s for non-owners of a 0-public-list profile, `generateMetadata` goes generic when
   private (no name/bio leak), and the owner gets a "publish a list to go public" nudge (Share hidden).
