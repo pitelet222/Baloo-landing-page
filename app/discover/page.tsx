@@ -12,6 +12,7 @@ import { getRecentProducts } from "@/lib/db/queries/products";
 import { REGIONS, countryToRegion, type Region } from "@/lib/retailers";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ListCard } from "@/components/lists/ListCard";
+import { ProductRow } from "@/components/ProductRow";
 import { SearchBox } from "@/components/discover/SearchBox";
 
 export const metadata: Metadata = {
@@ -136,41 +137,7 @@ export default async function DiscoverPage({
           ) : (
             <ul className="mt-4 max-w-[760px] overflow-hidden rounded-2xl border border-line bg-paper shadow-card [&>li+li]:border-t [&>li+li]:border-line">
               {products.map((p) => (
-                <li key={p.id}>
-                  <Link
-                    href={`/p/${p.slug}`}
-                    className="flex items-center gap-3 px-4 py-3 transition hover:bg-canvas sm:px-5"
-                  >
-                    <span
-                      aria-hidden
-                      className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-lg bg-canvas font-display text-lg text-ink/30"
-                    >
-                      {(p.brand ?? p.name)[0]?.toUpperCase()}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-display text-[17px] leading-tight text-ink">
-                        {p.name}
-                      </span>
-                      {(p.brand || p.retailer) && (
-                        <span className="text-xs text-muted">
-                          {[p.brand, p.retailer].filter(Boolean).join(" · ")}
-                        </span>
-                      )}
-                    </span>
-                    <svg
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden
-                      className="h-4 w-4 shrink-0 text-muted"
-                    >
-                      <path d="M6 3.5L10.5 8 6 12.5" />
-                    </svg>
-                  </Link>
-                </li>
+                <ProductRow key={p.id} slug={p.slug} name={p.name} brand={p.brand} retailer={p.retailer} />
               ))}
             </ul>
           )}

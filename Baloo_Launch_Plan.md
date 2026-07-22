@@ -53,7 +53,10 @@ where they overlap, **this ordering wins for launch**. Working board: the `Baloo
   - **L1e ✅ shipped** — Lists V3 pass: list-detail editorial rows (plain Playfair `1,2,3`), own-list
     cleanup (no "by @you"/Save on your own list), empty-state leads with *Add product* (owner) / calm
     line (others), warmer `/lists` guidance states. — **CC**
-  - Next per-screen passes: **L1f** discover · **L1g** profile · **L1h** modals.
+  - **L1f ✅ shipped** — Discover V3 pass: shared `ProductRow` (thumbnail + Playfair name + meta + SVG
+    chevron) across "Recently analysed" + search product results; search list rows swapped `→` → the
+    same chevron. Consistency + DRY, no behaviour change. — **CC**
+  - Next per-screen passes: **L1g** profile · **L1h** modals.
 - **L4 — Seed supply.** Official accounts (**@baloo, @balooteam, @proteinpicks, @kidslunchbox**) + a
   set of genuinely good curated lists (Best protein yogurts · Cereals I'd buy again · Ice creams
   under 5 ingredients · Best snacks for kids · Mercadona essentials). An empty community is a dead one.

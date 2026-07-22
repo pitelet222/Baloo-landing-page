@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { ProductRow, RowChevron } from "@/components/ProductRow";
 
 type Hit = {
   products: { id: string; name: string; brand: string | null; slug: string }[];
@@ -127,9 +128,7 @@ export function SearchBox() {
                           {l.ownerHandle && ` · @${l.ownerHandle}`}
                         </span>
                       </span>
-                      <span aria-hidden className="shrink-0 text-muted">
-                        →
-                      </span>
+                      <RowChevron />
                     </Link>
                   </li>
                 ))}
@@ -144,28 +143,7 @@ export function SearchBox() {
               </h2>
               <ul className="mt-2 max-w-[760px] overflow-hidden rounded-2xl border border-line bg-paper shadow-card [&>li+li]:border-t [&>li+li]:border-line">
                 {hits.products.map((p) => (
-                  <li key={p.id}>
-                    <Link
-                      href={`/p/${p.slug}`}
-                      className="flex items-center gap-3 px-4 py-3 transition hover:bg-canvas"
-                    >
-                      <span
-                        aria-hidden
-                        className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-lg bg-canvas font-display text-lg text-ink/30"
-                      >
-                        {(p.brand ?? p.name)[0]?.toUpperCase()}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate font-display text-[17px] text-ink">
-                          {p.name}
-                        </span>
-                        {p.brand && <span className="text-xs text-muted">{p.brand}</span>}
-                      </span>
-                      <span aria-hidden className="shrink-0 text-muted">
-                        →
-                      </span>
-                    </Link>
-                  </li>
+                  <ProductRow key={p.id} slug={p.slug} name={p.name} brand={p.brand} />
                 ))}
               </ul>
             </>

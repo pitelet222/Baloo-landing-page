@@ -6,6 +6,15 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **L1f — Discover V3 pass (per-screen port, 2 of 4):** a consistency + DRY pass on the already-V3
+  Discover screen. Extracted a shared `ProductRow` (brand-initial thumbnail + Playfair name +
+  brand·retailer meta + the app's SVG chevron) and used it in both places product rows appeared —
+  Discover's "Recently analysed" and `SearchBox`'s product results — so the two can't drift. The
+  search **list** rows swapped their text `→` for the same `RowChevron`, so every row in the app now
+  points the same way (no `→` glyphs left in results). Pure presentation; no data/route/behaviour
+  change (debounce, `?q=` sync, filter pills untouched). Verified live: recently-analysed + product
+  search + list search all render via the shared row with SVG chevrons, count line + filters intact,
+  console clean, build green. Next: **L1g** profile · **L1h** modals.
 - **L1e — Lists V3 pass (per-screen port, 1 of 4):** brought the Lists surfaces up to the L1c
   editorial bar. List-detail item rows drop the `01` zero-pad for a plain Playfair `1,2,3` (matches
   `IngredientRow`); **own-list cleanup** (Jitain's V3 note) hides the redundant "by @you" line
