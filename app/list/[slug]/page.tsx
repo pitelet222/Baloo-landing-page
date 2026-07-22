@@ -57,20 +57,20 @@ export default async function ListPage({ params }: Params) {
   const viewerSaved = viewer ? await isSaved(dbi, viewer.id, list.id) : false;
 
   return (
-    <div className="relative min-h-screen">
-      <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5">
-        <SiteHeader
-          action={
-            isOwner ? (
-              <Link
-                href={`/list/${list.slug}/edit`}
-                className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink transition hover:border-ink/20"
-              >
-                Edit
-              </Link>
-            ) : undefined
-          }
-        />
+    <div className="relative flex min-h-screen flex-col">
+      <SiteHeader
+        action={
+          isOwner ? (
+            <Link
+              href={`/list/${list.slug}/edit`}
+              className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink transition hover:border-ink/20"
+            >
+              Edit
+            </Link>
+          ) : undefined
+        }
+      />
+      <main className="mx-auto flex w-full max-w-tool flex-1 flex-col px-5 pt-8">
 
         <section className="mt-8 animate-fade-in">
           <ListCover

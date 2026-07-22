@@ -16,9 +16,9 @@ export default async function AdminPage() {
   const reports = dbi ? await getOpenReports(dbi) : [];
 
   return (
-    <div className="relative min-h-screen">
-      <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5 pb-16">
-        <SiteHeader />
+    <div className="relative flex min-h-screen flex-col">
+      <SiteHeader />
+      <main className="mx-auto flex w-full max-w-tool flex-1 flex-col px-5 pb-16 pt-8">
         <section className="mt-10 animate-fade-in">
           <h1 className="font-display text-[30px] leading-tight text-ink">Moderation</h1>
           <p className="mt-1.5 text-sm text-muted">

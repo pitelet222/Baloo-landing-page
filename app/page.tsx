@@ -114,10 +114,9 @@ export default function Home() {
   const showEmail = hasHeader && ingredients.length > 0 && !analysing;
 
   return (
-    <div className="relative min-h-screen">
-      <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5">
-        <SiteHeader variant="left" />
-
+    <div className="relative flex min-h-screen flex-col">
+      <SiteHeader variant="left" />
+      <main className="mx-auto flex w-full max-w-tool flex-1 flex-col px-5">
         <section className={idle ? "pt-12 sm:pt-16" : "pt-8"}>
           {idle && (
             <div className="max-w-xl">

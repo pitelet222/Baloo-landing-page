@@ -54,10 +54,9 @@ export default async function ProductPage({ params }: Params) {
     : undefined;
 
   return (
-    <div className="relative min-h-screen">
-      <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5">
-        <SiteHeader action={<AddToList productId={data.product.id} />} />
-
+    <div className="relative flex min-h-screen flex-col">
+      <SiteHeader action={<AddToList productId={data.product.id} />} />
+      <main className="mx-auto flex w-full max-w-tool flex-1 flex-col px-5 pt-8">
         {data.items.length > 0 ? (
           // loading={false} → ResultsView renders the finished (non-streaming) product view.
           <ResultsView

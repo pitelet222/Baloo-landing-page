@@ -43,12 +43,11 @@ export default async function DiscoverPage({
   const recent = dbi ? await withRegionAvailability(dbi, lists, region) : [];
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative flex min-h-screen flex-col">
+      <SiteHeader width="wide" />
       {/* 1140px: the one documented extension of max-w-tool — a reading column can't hold a
           card grid (D-G5 handoff §0). */}
-      <main className="mx-auto flex min-h-screen w-full max-w-[1140px] flex-col px-5 pb-16">
-        <SiteHeader />
-
+      <main className="mx-auto flex w-full max-w-[1140px] flex-1 flex-col px-5 pb-16 pt-8">
         <section className="mt-12 max-w-[680px] animate-fade-in">
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-natural">Discover</p>
           <h1 className="mt-2 font-display text-4xl leading-[1.1] text-ink">

@@ -16,10 +16,9 @@ export default async function MyListsPage() {
     auth?.profile && dbi ? await getListsByOwnerWithCounts(dbi, auth.profile.id) : [];
 
   return (
-    <div className="relative min-h-screen">
-      <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5">
-        <SiteHeader />
-
+    <div className="relative flex min-h-screen flex-col">
+      <SiteHeader />
+      <main className="mx-auto flex w-full max-w-tool flex-1 flex-col px-5 pt-8">
         <section className="mt-10 animate-fade-in">
           <div className="flex items-center justify-between gap-3">
             <h1 className="font-display text-2xl text-ink">Your lists</h1>

@@ -34,18 +34,18 @@ export default async function EditListPage({ params }: Params) {
   };
 
   return (
-    <div className="relative min-h-screen">
-      <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5">
-        <SiteHeader
-          action={
-            <Link
-              href={`/list/${list.slug}`}
-              className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink transition hover:border-ink/20"
-            >
-              Done
-            </Link>
-          }
-        />
+    <div className="relative flex min-h-screen flex-col">
+      <SiteHeader
+        action={
+          <Link
+            href={`/list/${list.slug}`}
+            className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink transition hover:border-ink/20"
+          >
+            Done
+          </Link>
+        }
+      />
+      <main className="mx-auto flex w-full max-w-tool flex-1 flex-col px-5 pt-8">
         <ListEditor initial={initial} />
       </main>
     </div>

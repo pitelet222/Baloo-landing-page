@@ -6,6 +6,19 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **L1d-1 — V3 app shell (design port, slice 4a):** the header is now a **full-width, sticky, blurred
+  bar** across every app page instead of a header hand-copied inside each 640px column. `SiteHeader`'s
+  `left` variant renders `sticky top-0 w-full border-b bg-canvas/75 backdrop-blur-md` with an inner
+  container width-matched to the page (`width="tool"` default, `"wide"` = 1140px on Discover), and is
+  lifted out of `<main>` to sit as a sibling so it can go edge-to-edge; each page's outer wrapper became
+  a `flex min-h-screen flex-col` with `main` as `flex-1` (footer stays anchored). New `HeaderNav` client
+  island marks the **active section** via `usePathname()` (active = ink, inactive = muted) and folds in
+  the old admin gate (`AdminNavLink` removed). Welcome keeps its centered, non-sticky onboarding header
+  (deliberately outside the shell). The **header search overlay** is the next slice (L1d-2). No data
+  changes, no new deps. Verified live: sticky `top:0`/`z-40`/`blur(12px)`/`canvas/75` full-bleed bar,
+  per-page inner width (640/1140), active pill on `/discover`·`/lists`·`/feed`, content clears the bar,
+  pinned after scroll, product AddToList + AccountMenu (dropdown above content) intact, L1c count
+  unchanged, console clean, `build` green.
 - **L1c — V3 analysis view (design port, slice 3):** the analysis screen Jitain singled out. The
   ingredient count is now the **hero of the screen** — a big Playfair `natural`-green number (58px) +
   "ingredients in this product" (Playfair 23px) + an "In label order — N natural, N processed"

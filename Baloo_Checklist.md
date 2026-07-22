@@ -23,7 +23,13 @@
         counts in code), plain Playfair `1,2,3` rows, two-beat "What it is / In this product" expand;
         canon gained a **Statement** type step. `role` kept (Jitain to confirm). Verified live on `/p`.
         (drawer variant rides with P5) — **CC** *(Mobbin: Julienne)*
-  - [ ] **L1d — app shell**: full-width sticky/blur header across all pages + header search overlay — **CC**
+  - [x] **L1d-1 — app shell** ✅ shipped: `SiteHeader` `left` variant → full-width sticky blur bar
+        (`sticky top-0 z-40 w-full bg-canvas/75 backdrop-blur-md`), lifted out of `<main>`; per-page
+        inner width (`tool`/`wide`); new `HeaderNav` client island marks the active section
+        (`usePathname`, active=ink); `AdminNavLink` folded in. Welcome stays non-shell. Verified across
+        home/discover/product/lists/feed. — **CC**
+  - [ ] **L1d-2 — header search overlay**: search trigger in the bar → dual-intent modal (URL → home
+        `?url=` auto-run, text → `/discover?q=`) — **CC**
   - [ ] Per-screen passes: lists, discover, profile, modals — **CC**
 - [ ] **L4 — Seed supply**: official accounts (@baloo/@balooteam/@proteinpicks/@kidslunchbox) + genuinely good starter lists — **M/CC**
 - [x] **L5c — Visibility auto-public** ✅ shipped: `/u/[handle]` 404s for non-owners of a 0-public-list

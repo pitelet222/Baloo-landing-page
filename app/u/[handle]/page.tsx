@@ -73,10 +73,9 @@ export default async function ProfilePage({ params, searchParams }: Params) {
   const viewerFollows = viewer && !isOwner ? await isFollowing(dbi, viewer.id, profile.id) : false;
 
   return (
-    <div className="relative min-h-screen">
-      <main className="mx-auto flex min-h-screen max-w-tool flex-col px-5">
-        <SiteHeader />
-
+    <div className="relative flex min-h-screen flex-col">
+      <SiteHeader />
+      <main className="mx-auto flex w-full max-w-tool flex-1 flex-col px-5 pt-8">
         <section className="mt-10 animate-fade-in">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-4">
