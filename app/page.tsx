@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { experimental_useObject as useObject } from "@ai-sdk/react";
 import { analysisSchema, type Ingredient, type Nutrition } from "@/lib/schema";
 import Link from "next/link";
@@ -102,6 +102,16 @@ export default function Home() {
       setPhase("error");
     }
   }
+
+  // App-shell search hand-off (Order L1d-2): the header overlay routes a pasted URL to `/?url=…`.
+  // Read it once on mount, strip it so a refresh doesn't re-analyse, and run the normal flow.
+  useEffect(() => {
+    const url = new URLSearchParams(window.location.search).get("url");
+    if (!url) return;
+    window.history.replaceState(null, "", "/");
+    handleAnalyze(url);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const streamed = (object?.ingredients ?? []) as Partial<Ingredient>[];
   const ingredients = cached ?? streamed;

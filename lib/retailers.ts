@@ -2,6 +2,14 @@ import { SUPPORTED_RETAILERS } from "./config";
 
 export type UrlCheck = { ok: true } | { ok: false; reason: string };
 
+// Looks-like-a-link heuristic for the dual-intent search (paste a product URL vs. type a query):
+// an explicit http(s) scheme, or a bare domain.tld optionally followed by a path. Shared by the
+// homepage hero box (`HomeSearch`) and the app-shell search overlay (`HeaderSearch`, Order L1d-2).
+export function looksLikeUrl(v: string): boolean {
+  const s = v.trim();
+  return /^https?:\/\//i.test(s) || /^[\w-]+(\.[\w-]+)+(\/|$)/.test(s);
+}
+
 // Client-side validation before any API call: must be http(s) and a recognised retailer.
 export function validateUrl(raw: string): UrlCheck {
   const value = raw.trim();

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Wordmark } from "./Wordmark";
 import { AccountMenu } from "./auth/AccountMenu";
 import { HeaderNav } from "./HeaderNav";
+import { HeaderSearch } from "./HeaderSearch";
 
 // The shared app-shell header (Orders G5 + L1d). One component instead of seven hand-copied headers.
 //
@@ -46,7 +47,8 @@ export function SiteHeader({
           <Wordmark className="text-xl" />
         </Link>
         <div className="flex items-center gap-3">
-          {showNav && <HeaderNav className="flex" />}
+          {showNav && <HeaderNav className="hidden sm:flex" />}
+          <HeaderSearch />
           {action}
           <AccountMenu />
         </div>

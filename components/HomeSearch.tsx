@@ -6,13 +6,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { validateUrl } from "@/lib/retailers";
-
-// Looks-like-a-link heuristic: an explicit scheme, or a bare domain.tld optionally followed by a path.
-function looksLikeUrl(v: string): boolean {
-  const s = v.trim();
-  return /^https?:\/\//i.test(s) || /^[\w-]+(\.[\w-]+)+(\/|$)/.test(s);
-}
+import { validateUrl, looksLikeUrl } from "@/lib/retailers";
 
 export function HomeSearch({
   onAnalyze,

@@ -28,8 +28,10 @@
         inner width (`tool`/`wide`); new `HeaderNav` client island marks the active section
         (`usePathname`, active=ink); `AdminNavLink` folded in. Welcome stays non-shell. Verified across
         home/discover/product/lists/feed. — **CC**
-  - [ ] **L1d-2 — header search overlay**: search trigger in the bar → dual-intent modal (URL → home
-        `?url=` auto-run, text → `/discover?q=`) — **CC**
+  - [x] **L1d-2 — header search overlay** ✅ shipped: `HeaderSearch` trigger in the bar (hidden on `/`,
+        `/`-key opens) → dual-intent modal (URL → `/?url=` home auto-run + param strip, text →
+        `/discover?q=`); `looksLikeUrl` shared via `lib/retailers.ts`; nav collapses on mobile. Verified
+        live (text route, URL handoff, trigger show/hide). — **CC**
   - [ ] Per-screen passes: lists, discover, profile, modals — **CC**
 - [ ] **L4 — Seed supply**: official accounts (@baloo/@balooteam/@proteinpicks/@kidslunchbox) + genuinely good starter lists — **M/CC**
 - [x] **L5c — Visibility auto-public** ✅ shipped: `/u/[handle]` 404s for non-owners of a 0-public-list

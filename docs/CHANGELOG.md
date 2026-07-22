@@ -6,6 +6,15 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **L1d-2 — header search overlay (design port, slice 4b):** "search is the homepage" is now reachable
+  from every page. A compact search trigger in the shell bar (hidden on `/`, where the hero box already
+  is; `/` key opens it anywhere) opens a dual-intent overlay (mirrors `AuthModal`): paste a supermarket
+  URL → the homepage analyse flow (routes to `/?url=…`, which the homepage reads on mount, runs, and
+  strips), type anything else → community search (`/discover?q=…`). The `looksLikeUrl` heuristic moved
+  to `lib/retailers.ts` so the hero box and overlay share one intent test. The nav now collapses on
+  mobile (`hidden sm:flex`, per DESIGN.md), leaving the bar to wordmark + search + account. No new deps.
+  Verified live: trigger present off-home/absent on home, intent chip + Analyse/Search label, text →
+  `/discover?q=`, URL handoff → `/?url=` → analyse runs + param stripped, console clean, build green.
 - **L1d-1 — V3 app shell (design port, slice 4a):** the header is now a **full-width, sticky, blurred
   bar** across every app page instead of a header hand-copied inside each 640px column. `SiteHeader`'s
   `left` variant renders `sticky top-0 w-full border-b bg-canvas/75 backdrop-blur-md` with an inner

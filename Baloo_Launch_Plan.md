@@ -47,8 +47,10 @@ where they overlap, **this ordering wins for launch**. Working board: the `Baloo
     `sticky top-0 z-40 w-full bg-canvas/75 backdrop-blur-md` bar lifted out of `<main>` (per-page inner
     width `tool`/`wide`), with a new `HeaderNav` client island marking the active section (active=ink).
     `AdminNavLink` folded in; welcome stays non-shell. Verified across home/discover/product/lists/feed. — **CC**
-  - **L1d-2** the header **search overlay** (bar search trigger → dual-intent modal: URL → home `?url=`
-    auto-run, text → `/discover?q=`). Then per-screen passes (lists, discover, profile, modals).
+  - **L1d-2 ✅ shipped** — the header **search overlay**: a `HeaderSearch` trigger in the bar (hidden on
+    `/`, `/`-key opens) → dual-intent modal (URL → `/?url=` home auto-run + param strip, text →
+    `/discover?q=`); `looksLikeUrl` shared via `lib/retailers.ts`; nav collapses on mobile. — **CC**
+  - Next: per-screen V3 passes (lists, discover, profile, modals).
 - **L4 — Seed supply.** Official accounts (**@baloo, @balooteam, @proteinpicks, @kidslunchbox**) + a
   set of genuinely good curated lists (Best protein yogurts · Cereals I'd buy again · Ice creams
   under 5 ingredients · Best snacks for kids · Mercadona essentials). An empty community is a dead one.
