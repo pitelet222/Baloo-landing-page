@@ -88,8 +88,12 @@ export default async function ListPage({ params }: Params) {
                   {list.description}
                 </p>
               )}
+              {/* Own-list cleanup (V3, Jitain): no "by @you" on your own list — keep it to the meta
+                  that tells the reader something new. Non-owners still see who curated it. */}
               <p className="mt-3 text-sm text-muted">
-                {owner ? (
+                {isOwner ? (
+                  <span className="text-muted/90">Your list</span>
+                ) : owner ? (
                   <>
                     by{" "}
                     <Link href={`/u/${owner.handle}`} className="text-ink/70 underline decoration-line underline-offset-2 hover:text-ink">
@@ -104,8 +108,9 @@ export default async function ListPage({ params }: Params) {
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
-              {/* Save is the ONE social signal on a list (L6) — no upvote. */}
-              <SavePill listId={list.id} initialSaved={viewerSaved} />
+              {/* Save is the ONE social signal on a list (L6) — no upvote. You don't save your own
+                  list, so it's hidden for the owner (V3 own-list cleanup); Share stays (growth loop). */}
+              {!isOwner && <SavePill listId={list.id} initialSaved={viewerSaved} />}
               <ShareButton path={`/list/${list.slug}`} />
               {!isOwner && <ReportControl targetType="list" targetId={list.id} />}
             </div>
@@ -113,18 +118,26 @@ export default async function ListPage({ params }: Params) {
         </section>
 
         {list.items.length === 0 ? (
-          <p className="mt-10 text-sm text-muted">
-            No products yet.
-            {isOwner && (
+          <div className="mt-10 rounded-2xl border border-line bg-paper p-8 text-center shadow-card">
+            <p className="font-display text-lg text-ink">Nothing here yet</p>
+            {isOwner ? (
               <>
-                {" "}
-                <Link href={`/list/${list.slug}/edit`} className="underline decoration-line underline-offset-2 hover:text-ink">
-                  Add some
+                <p className="mx-auto mt-1.5 max-w-xs text-sm text-muted">
+                  Add a product to start building this list.
+                </p>
+                <Link
+                  href={`/list/${list.slug}/edit`}
+                  className="mt-4 inline-flex rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper transition hover:bg-ink/85"
+                >
+                  Add a product
                 </Link>
-                .
               </>
+            ) : (
+              <p className="mx-auto mt-1.5 max-w-xs text-sm text-muted">
+                This list doesn&rsquo;t have any products yet.
+              </p>
             )}
-          </p>
+          </div>
         ) : (
           <ul className="mt-8 overflow-hidden rounded-2xl border border-line bg-paper shadow-card [&>li+li]:border-t [&>li+li]:border-line">
             {list.items.map((item, i) => (
@@ -133,8 +146,8 @@ export default async function ListPage({ params }: Params) {
                   href={`/p/${item.product.slug}`}
                   className="flex items-center gap-3 px-4 py-3.5 transition hover:bg-canvas sm:px-5"
                 >
-                  <span className="w-6 shrink-0 text-[13px] tabular-nums text-muted/70">
-                    {String(i + 1).padStart(2, "0")}
+                  <span className="w-6 shrink-0 font-display text-[15px] tabular-nums text-muted/60">
+                    {i + 1}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block font-display text-base leading-tight text-ink">

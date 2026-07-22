@@ -33,21 +33,38 @@ export default async function MyListsPage() {
           </div>
 
           {!auth ? (
-            <p className="mt-6 text-sm text-muted">
-              Sign in (top right) to create and keep lists of products.
-            </p>
+            <div className="mt-8 rounded-2xl border border-line bg-paper p-8 text-center shadow-card">
+              <p className="font-display text-lg text-ink">Keep the good stuff</p>
+              <p className="mx-auto mt-1.5 max-w-xs text-sm text-muted">
+                Sign in from the top right to create lists and save products you trust.
+              </p>
+            </div>
           ) : !auth.profile ? (
-            <p className="mt-6 text-sm text-muted">
-              Almost there —{" "}
-              <Link href="/welcome" className="underline decoration-line underline-offset-2 hover:text-ink">
-                choose your handle
-              </Link>{" "}
-              to start making lists.
-            </p>
+            <div className="mt-8 rounded-2xl border border-line bg-paper p-8 text-center shadow-card">
+              <p className="font-display text-lg text-ink">One more step</p>
+              <p className="mx-auto mt-1.5 max-w-xs text-sm text-muted">
+                Choose a handle and your lists get a shareable home.
+              </p>
+              <Link
+                href="/welcome"
+                className="mt-4 inline-flex rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper transition hover:bg-ink/85"
+              >
+                Choose your handle
+              </Link>
+            </div>
           ) : lists.length === 0 ? (
-            <p className="mt-6 text-sm text-muted">
-              No lists yet. Create one, or add a product to a list from any product page.
-            </p>
+            <div className="mt-8 rounded-2xl border border-line bg-paper p-8 text-center shadow-card">
+              <p className="font-display text-lg text-ink">No lists yet</p>
+              <p className="mx-auto mt-1.5 max-w-xs text-sm text-muted">
+                Start one here, or add a product to a list from any product page.
+              </p>
+              <Link
+                href="/lists/new"
+                className="mt-4 inline-flex rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper transition hover:bg-ink/85"
+              >
+                New list
+              </Link>
+            </div>
           ) : (
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {lists.map((l) => (

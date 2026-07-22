@@ -1,8 +1,8 @@
 import { coverCss, monogram } from "@/lib/cover";
 
-// Generated list cover (Order G4): a deterministic gradient + the title's monogram. Presentational
-// server component — reused on the list page hero and the list card. The OG route mirrors this via
-// the same lib/cover helpers.
+// Generated list cover (Order G4): a deterministic flat V3 tint (Order L1a — no gradients) + the
+// title's monogram. Presentational server component — reused on the list page hero and the list card.
+// The OG route mirrors this via the same lib/cover helpers (coverCss).
 export function ListCover({
   title,
   seed,

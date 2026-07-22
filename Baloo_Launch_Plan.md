@@ -50,7 +50,10 @@ where they overlap, **this ordering wins for launch**. Working board: the `Baloo
   - **L1d-2 ✅ shipped** — the header **search overlay**: a `HeaderSearch` trigger in the bar (hidden on
     `/`, `/`-key opens) → dual-intent modal (URL → `/?url=` home auto-run + param strip, text →
     `/discover?q=`); `looksLikeUrl` shared via `lib/retailers.ts`; nav collapses on mobile. — **CC**
-  - Next: per-screen V3 passes (lists, discover, profile, modals).
+  - **L1e ✅ shipped** — Lists V3 pass: list-detail editorial rows (plain Playfair `1,2,3`), own-list
+    cleanup (no "by @you"/Save on your own list), empty-state leads with *Add product* (owner) / calm
+    line (others), warmer `/lists` guidance states. — **CC**
+  - Next per-screen passes: **L1f** discover · **L1g** profile · **L1h** modals.
 - **L4 — Seed supply.** Official accounts (**@baloo, @balooteam, @proteinpicks, @kidslunchbox**) + a
   set of genuinely good curated lists (Best protein yogurts · Cereals I'd buy again · Ice creams
   under 5 ingredients · Best snacks for kids · Mercadona essentials). An empty community is a dead one.

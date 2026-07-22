@@ -6,6 +6,16 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **L1e — Lists V3 pass (per-screen port, 1 of 4):** brought the Lists surfaces up to the L1c
+  editorial bar. List-detail item rows drop the `01` zero-pad for a plain Playfair `1,2,3` (matches
+  `IngredientRow`); **own-list cleanup** (Jitain's V3 note) hides the redundant "by @you" line
+  (now "Your list") and the Save pill on your own list (Share + Edit stay); the empty state becomes a
+  warm card that **leads with an *Add product* CTA** for the owner and a calm line for everyone else.
+  `/lists`' three guidance states (signed-out / handle-pending / empty) became editorial empty-state
+  cards with a Playfair line + the right primary action. `ListCover`'s stale "gradient" comment fixed
+  (flat tints since L1a); `ListCard` already read V3, left as-is. Verified live across owner /
+  non-owner / owner-empty / non-owner-empty (throwaway list created + deleted), grid intact, console
+  clean, build green. Next per-screen passes: **L1f** discover · **L1g** profile · **L1h** modals.
 - **L1d-2 — header search overlay (design port, slice 4b):** "search is the homepage" is now reachable
   from every page. A compact search trigger in the shell bar (hidden on `/`, where the hero box already
   is; `/` key opens it anywhere) opens a dual-intent overlay (mirrors `AuthModal`): paste a supermarket

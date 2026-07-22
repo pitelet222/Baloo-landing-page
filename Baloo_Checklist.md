@@ -32,7 +32,11 @@
         `/`-key opens) → dual-intent modal (URL → `/?url=` home auto-run + param strip, text →
         `/discover?q=`); `looksLikeUrl` shared via `lib/retailers.ts`; nav collapses on mobile. Verified
         live (text route, URL handoff, trigger show/hide). — **CC**
-  - [ ] Per-screen passes: lists, discover, profile, modals — **CC**
+  - [~] Per-screen passes — **CC**
+    - [x] **L1e — lists** ✅ shipped: list-detail editorial rows (plain Playfair `1,2,3`), own-list
+          cleanup (no "by @you"/Save on your own list), empty-state leads with *Add product* (owner) /
+          calm line (others), warmer `/lists` guidance states, `ListCover` comment fixed. Verified.
+    - [ ] **L1f — discover** · [ ] **L1g — profile** · [ ] **L1h — modals**
 - [ ] **L4 — Seed supply**: official accounts (@baloo/@balooteam/@proteinpicks/@kidslunchbox) + genuinely good starter lists — **M/CC**
 - [x] **L5c — Visibility auto-public** ✅ shipped: `/u/[handle]` 404s for non-owners of a 0-public-list
       profile + generic metadata; owner sees own + a "publish to go public" nudge (Share hidden).
