@@ -184,9 +184,12 @@ export const lists = pgTable(
   "lists",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    ownerId: uuid("owner_id")
-      .notNull()
-      .references(() => profiles.id, { onDelete: "cascade" }),
+    // Nullable + SET NULL (Order S7a): when a curator deletes their account we ERASE THE PERSON but
+    // KEEP THE COMMUNITY — their public lists survive, ownerless, and render "by a Baloo user".
+    // Cascade here would have hard-deleted every list they ever made and 404'd every shared link.
+    // Security note: `owner_id = auth.uid()` is never true for NULL, so an orphaned list is
+    // editable by nobody — the RLS policies need no change.
+    ownerId: uuid("owner_id").references(() => profiles.id, { onDelete: "set null" }),
     title: text("title").notNull(),
     slug: text("slug").notNull().unique(), // /list/[slug]
     description: text("description"),
@@ -267,9 +270,11 @@ export const comments = pgTable(
   "comments",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    userId: uuid("user_id")
-      .notNull()
-      .references(() => profiles.id, { onDelete: "cascade" }),
+    // Nullable + SET NULL (Order S7a). Cascade here was a trap: because `parentId` below also
+    // cascades, deleting an account would have deleted that person's comments AND every reply
+    // OTHER people wrote underneath them. Now the row survives as a scrubbed tombstone (body
+    // cleared, hiddenBy 'author'), the thread tree stays intact, and the personal data is gone.
+    userId: uuid("user_id").references(() => profiles.id, { onDelete: "set null" }),
     productId: uuid("product_id")
       .notNull()
       .references(() => products.id, { onDelete: "cascade" }),

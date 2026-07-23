@@ -14,7 +14,8 @@ export async function GET(_req: Request, { params }: Params) {
   const { slug } = await params;
   const dbi = db();
   const list = dbi ? await getListBySlug(dbi, slug) : null;
-  const owner = list && dbi ? await getProfileById(dbi, list.ownerId) : null;
+  // ownerId is nullable since S7a (deleted curator) — the card just drops the "by @handle" suffix.
+  const owner = list?.ownerId && dbi ? await getProfileById(dbi, list.ownerId) : null;
 
   const title = list?.title ?? "Baloo";
   const tint = coverTint(list?.slug ?? "baloo");

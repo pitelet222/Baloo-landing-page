@@ -22,7 +22,9 @@ async function load(slug: string) {
   if (!dbi) return null;
   const list = await getListBySlug(dbi, slug);
   if (!list) return null;
-  const owner = await getProfileById(dbi, list.ownerId);
+  // ownerId is nullable since S7a: a curator who deleted their account leaves the list ownerless,
+  // and the render below already falls back to "by a Baloo user".
+  const owner = list.ownerId ? await getProfileById(dbi, list.ownerId) : null;
   return { list, owner };
 }
 

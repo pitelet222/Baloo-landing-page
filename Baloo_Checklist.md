@@ -104,8 +104,15 @@
   - [ ] *(dropped from S5)* "zod on every body" — free-text routes already cap server-side; fold any
         standardization into S4 — **CC**
 - [ ] **S6 — Error monitoring** (Sentry) — "stable from the get-go" = knowing prod broke first — **CC**
-- [ ] **S7 — "Dar de baja"**: email unsubscribe (GDPR + Gmail/Yahoo one-click header) **and**
-      account deletion (right to erasure — **we have no delete flow at all**; EU launch) — **CC**
+- [~] **S7 — "Dar de baja"** — **CC**
+  - [x] **S7a — Account deletion** ✅ shipped (right to erasure). Migration `0008` flips
+        `lists.owner_id` + `comments.user_id` to nullable/`SET NULL` — previously **every** FK cascaded,
+        so deleting an account would have hard-deleted the person's public lists *and* other people's
+        replies. Policy: **erase the person, keep the community**. `DELETE /api/account`
+        (`requireUser`, id from the session) + `/settings` → typed-handle confirm dialog. Verified by
+        `scripts/check-account-deletion.ts` (13/13) + clean security advisor.
+  - [ ] **S7b — Email unsubscribe** (GDPR + Gmail/Yahoo one-click header). Blocked: no notification
+        emails exist yet (N2, which needs S3); Loops carries its own unsubscribe for marketing. — **CC**
 - [ ] **S8 — Privacy policy + terms** on baloo.life *(no cookie banner needed while analytics-free)* — **J**
 
 **Tier B — fast-follow (days after beta):**

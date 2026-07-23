@@ -101,6 +101,17 @@ without `DATABASE_URL`. Connects as `postgres` (via the transaction pooler, `pre
   "Popular this week" ranks by saves alone. Historical product/list vote rows remain but are never
   written or shown.
 - `comments` — threaded; soft-hidden via `hidden_at`/`hidden_by` (moderation tombstones).
+
+**Account deletion — "erase the person, keep the community" (Order S7a).** Everything hanging off
+`profiles` cascades, *except* two deliberate exceptions (migration `0008`): `lists.owner_id` and
+`comments.user_id` are **nullable + `ON DELETE SET NULL`**. So deleting an account removes the auth
+user (email/password), the profile, saves, follows, votes, activity and reports — while **public
+lists survive ownerless** (rendered "by a Baloo user") and **comments survive as scrubbed
+tombstones**, which keeps other people's replies from being cascaded away with them. `lib/account/
+delete.ts` is order-sensitive: private lists deleted and comments scrubbed *while the owner is still
+known*, then the auth user last. Security: `owner_id = auth.uid()` is never true for `NULL`, so an
+orphaned list is editable by nobody — the RLS policies needed no change. **Do not restore these two
+FKs to `CASCADE`** without re-reading that file.
 - `activity` — append-only event log (`verb` + `meta` jsonb) powering the feed **and** the seed for
   notifications.
 - `reports` — user reports feeding the moderation queue.

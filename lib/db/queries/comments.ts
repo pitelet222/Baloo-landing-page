@@ -15,7 +15,9 @@ export type ThreadComment = {
   votes: number;
   viewerVoted: boolean;
   hidden: boolean; // moderated or author-deleted → render a tombstone (G9)
-  authorId: string; // lets the client show the owner's Delete affordance
+  // Lets the client show the owner's Delete affordance. Null since S7a: the author deleted their
+  // account, so the comment is an ownerless tombstone — no viewer id can ever match, which is right.
+  authorId: string | null;
   replies: ThreadComment[]; // one level; always chronological
 };
 

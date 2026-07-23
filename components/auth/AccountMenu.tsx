@@ -91,6 +91,14 @@ export function AccountMenu() {
               detail="Finish setting up your profile."
             />
           )}
+          <MenuItem
+            onClick={() => {
+              setOpen(false);
+              router.push("/settings");
+            }}
+            label="Settings"
+            detail="Account and data."
+          />
           <MenuItem onClick={signOut} label="Sign out" detail={user.email ?? undefined} />
         </div>
       )}

@@ -6,6 +6,29 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **S7a — Account deletion (GDPR right to erasure):** there was **no delete-account flow at all**, and
+  the schema made adding one dangerous: every FK from `profiles` was `ON DELETE CASCADE`, so deleting
+  an account would have **hard-deleted every public list that person curated** (404ing every shared
+  link) and — because `comments.parent_id` cascades too — **deleted other people's replies** to them.
+  Migration **0008** flips `lists.owner_id` and `comments.user_id` to **nullable + `ON DELETE SET
+  NULL`** (non-destructive: constraints and nullability only). The confirmed policy is **erase the
+  person, keep the community**. `lib/account/delete.ts` runs the erasure in a deliberate order —
+  private lists deleted, comments scrubbed to tombstones (`body` cleared, `hiddenBy: "author"`, reusing
+  the G9 pattern that keeps thread trees intact), then the Supabase auth user deleted, whose cascade
+  clears profile/saves/follows/votes/activity while the two new SET NULLs preserve public lists and
+  comment tombstones. `DELETE /api/account` is gated by `requireUser` (not `requireVerifiedUser` — a
+  guest is a real row and must be erasable) and takes the id from the **session**, never the body.
+  New `/settings` page (linked from the account menu; future home of notification prefs +
+  unsubscribe) → `DeleteAccountDialog` on the L1h `Modal` shell, requiring the handle typed exactly;
+  the destructive button is **ink, not a danger colour** (`processed` is classification, never a
+  control, per DESIGN.md — the system has no red). RLS needed no change: `owner_id = auth.uid()` is
+  never true for `NULL`, so an orphaned list is editable by nobody. Verified by a throwaway-account
+  E2E script (`scripts/check-account-deletion.ts`, **13/13 checks**, self-cleaning) — notably **"the
+  OTHER user's reply survives"** — plus a clean Supabase security advisor (no new findings), 401 on the
+  signed-out route, and a green build. *Not exercised: the signed-in dialog click-through — the browser
+  session was signed out and signing in needs credentials; the deletion logic is covered by the script.*
+  **S7's unsubscribe half stays open** — there are no notification emails yet (N2), and Loops carries
+  its own unsubscribe for marketing.
 - **S3 — Custom SMTP (code fix + runbook; the setup itself is M's):** S3 is an account, an API key, a
   dashboard form and DNS records — none of it doable from the repo. What *was* doable turned out to
   matter: `AuthModal` called `signUp()` (and the guest→account `updateUser()`) **without

@@ -127,8 +127,12 @@ Three holes the audit found in shipped code:
   reset email template has nothing to trigger it — worth adding before launch. — **CC done / M owed**
 - **S4** write rate limits/caps · **S5** ✅ security headers shipped (enforcing safe set + report-only
   CSP); remaining: M flips leaked-password + Vercel WAF toggles, later flip CSP to enforcing · **S6**
-  error monitoring (Sentry) · **S7** unsubscribe **and** account deletion (GDPR; no delete flow
-  exists) · **S8** privacy policy + terms (**J**).
+  error monitoring (Sentry) · **S7a ✅ account deletion shipped** (GDPR erasure): migration `0008` made
+  `lists.owner_id` + `comments.user_id` nullable/`SET NULL` — **every FK used to cascade**, so a
+  deletion would have destroyed the person's public lists *and* other people's replies. Policy: erase
+  the person, keep the community. `DELETE /api/account` + `/settings` typed-handle confirm; 13/13 E2E
+  checks, advisor clean. **S7b unsubscribe still open** (blocked on N2/S3) · **S8** privacy policy +
+  terms (**J**).
 
 ### Tier B — high-value fast-follow (can ship days after beta)
 - **N1/N2 — Notifications.** In-app first (a bell over the existing `activity` table from G6), then
