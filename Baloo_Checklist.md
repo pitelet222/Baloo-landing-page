@@ -51,7 +51,11 @@
 - [x] **L5c — Visibility auto-public** ✅ shipped: `/u/[handle]` 404s for non-owners of a 0-public-list
       profile + generic metadata; owner sees own + a "publish to go public" nudge (Share hidden).
       Discovery surfaces already compliant. Verified (non-owner 404 / owner nudge / public unaffected). — **CC**
-- [ ] **L2 — Social sharing** (= P8, pulled forward): IG card via `navigator.share` + WhatsApp/Telegram/FB intents + sharing-card template — **CC**
+- [x] **L2 — Social sharing** (= P8, pulled forward) ✅ shipped: `ShareSheet` on the L1h `Modal` shell —
+      card preview + WhatsApp/Telegram/X/Facebook intents (`lib/share.ts`) + Copy link + Save image +
+      native `Share…` sharing the card as a `File` (puts Instagram in the mobile OS sheet). Reuses the
+      existing OG card; profiles degrade to link-only. Verified live. — **CC**
+  - [ ] Follow-ups: portrait/IG-optimised card · profile + product cards · product-page mount — **CC**
 
 **Tier A — security (17 July audit; a beta with real users needs these):**
 > Auth verdict: **we already use a third-party provider — Supabase Auth.** Not rolling our own; no

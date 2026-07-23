@@ -6,6 +6,23 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **L2 — Social sharing (the growth loop):** Share was a single button that called
+  `navigator.share({url})` and fell back to the clipboard — on desktop, where `navigator.share`
+  usually doesn't exist, that silently meant "Link copied" with no channel choice, and it never shared
+  the **card image**. It now opens a **`ShareSheet`** (built on the L1h `Modal` shell, so Escape /
+  backdrop-close / `role="dialog"` come free): the card preview, **WhatsApp · Telegram · X · Facebook**
+  intent URLs (`lib/share.ts`, pure builders so the encoding is checkable), **Copy link**, **Save
+  image**, and a native **Share…** that fetches the card, wraps it in a `File` and calls
+  `navigator.share({files})` when `canShare` allows — the path that puts **Instagram in the OS sheet on
+  mobile**. Surfaces without a card degrade to link-only (profiles). Reuses the existing
+  `/api/og/list/[slug]` card; no new deps, routes or schema. Verified live: sheet opens through the
+  Modal shell, all four channel `href`s correctly encoded with `rel="noopener noreferrer"`, card serves
+  200/`image/png`, Save image has `download`, native Share… correctly hidden where `navigator.share` is
+  absent, profile mount link-only, Escape closes, console clean. *(Copy-link's confirmation couldn't be
+  exercised — the automated browser denies `clipboard.writeText`; the handler is unchanged from the
+  shipped one.)* **Not in this slice:** a portrait/IG-optimised card, profile/product cards, and the
+  product-page mount — the sheet takes any `cardPath`, so those drop in later. True one-tap IG Stories
+  stays native-only (M1).
 - **L1h — Modals V3 pass (per-screen port, 4 of 4) — completes the V3 design port (L1).** The three
   overlays had drifted, so they now share one shell: new `components/Modal.tsx` owns the backdrop,
   panel, Escape, backdrop-close and dialog semantics. **`ReportDialog` gained the most** — it had

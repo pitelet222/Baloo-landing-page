@@ -73,9 +73,13 @@ where they overlap, **this ordering wins for launch**. Working board: the `Baloo
   the owner sees their own with a "publish a list to go public" nudge, and Share is hidden until then.
   Discovery surfaces already enforced it (search returns no profiles; suggested-curators inner-joins
   public lists). No migration. — **CC**
-- **L2 — Social sharing (= P8, pulled forward).** IG card via `navigator.share({files})` + WhatsApp
-  / Telegram / Facebook intent URLs + the sharing-card template (the OG image at `/api/og/list/[slug]`
-  already exists). Jitain's #1 ASAP; the growth loop.
+- **L2 — Social sharing (= P8, pulled forward).** ✅ **shipped.** `ShareSheet` (on the L1h `Modal`
+  shell) replaces the bare Share button: card preview + **WhatsApp · Telegram · X · Facebook** intent
+  URLs (`lib/share.ts`) + Copy link + Save image + a native **Share…** that shares the card as a
+  `File` via `navigator.share({files})` when `canShare` allows — the path that puts Instagram in the
+  mobile OS sheet. Reuses the existing `/api/og/list/[slug]` card; surfaces without a card (profiles)
+  degrade to link-only. **Follow-ups:** portrait/IG-optimised card · profile + product cards ·
+  product-page mount. True one-tap IG Stories remains native-only (M1). — **CC**
 
 ### Tier A — security (added 17 July, from Jitain's questions + a code audit)
 **Auth is settled: we already use a third-party provider — Supabase Auth** (GoTrue), the same

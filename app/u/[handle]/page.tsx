@@ -98,7 +98,10 @@ export default async function ProfilePage({ params, searchParams }: Params) {
             </div>
             <div className="flex shrink-0 items-center gap-2">
               {/* Nothing public to share until the profile is public (L5c). */}
-              {publicCount > 0 && <ShareButton path={`/u/${profile.handle}`} />}
+              {/* No cardPath: profiles have no share card yet, so the sheet goes link-only. */}
+              {publicCount > 0 && (
+                <ShareButton path={`/u/${profile.handle}`} title={profile.displayName} />
+              )}
               <FollowButton profileId={profile.id} initialFollowing={viewerFollows} />
             </div>
           </div>

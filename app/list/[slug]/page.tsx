@@ -111,7 +111,11 @@ export default async function ListPage({ params }: Params) {
               {/* Save is the ONE social signal on a list (L6) — no upvote. You don't save your own
                   list, so it's hidden for the owner (V3 own-list cleanup); Share stays (growth loop). */}
               {!isOwner && <SavePill listId={list.id} initialSaved={viewerSaved} />}
-              <ShareButton path={`/list/${list.slug}`} />
+              <ShareButton
+                path={`/list/${list.slug}`}
+                title={list.title}
+                cardPath={`/api/og/list/${list.slug}`}
+              />
               {!isOwner && <ReportControl targetType="list" targetId={list.id} />}
             </div>
           </div>
