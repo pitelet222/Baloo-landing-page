@@ -39,7 +39,11 @@
     - [x] **L1f — discover** ✅ shipped: shared `ProductRow` (thumbnail + Playfair name + meta + SVG
           chevron) across "Recently analysed" + search product results; search list rows swapped `→`
           → the same chevron (one row affordance app-wide). Verified.
-    - [ ] **L1g — profile** · [ ] **L1h — modals**
+    - [x] **L1g — profile** ✅ shipped: editorial empty-state cards on both tabs (Lists → *New list*
+          CTA; Saved → owner variant + *Browse lists*, visitor variant), and fixed the Lists-empty
+          copy bug (spoke about the owner in the third person, but L5c means only they see it).
+          `FollowButton` already self-hides on own profile. Visitor path verified live.
+    - [ ] **L1h — modals**
 - [ ] **L4 — Seed supply**: official accounts (@baloo/@balooteam/@proteinpicks/@kidslunchbox) + genuinely good starter lists — **M/CC**
 - [x] **L5c — Visibility auto-public** ✅ shipped: `/u/[handle]` 404s for non-owners of a 0-public-list
       profile + generic metadata; owner sees own + a "publish to go public" nudge (Share hidden).

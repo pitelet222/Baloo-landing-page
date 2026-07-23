@@ -6,6 +6,18 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **L1g — Profile V3 pass (per-screen port, 3 of 4):** carried L1e's editorial empty-state card to
+  `/u/[handle]`. Both tabs' bare `text-sm text-muted` lines became warm cards: **Lists** empty →
+  "No lists yet" + a **New list** CTA, **Saved** empty → "Nothing saved yet" with an owner variant
+  ("Tap Save on any list…" + Browse lists CTA) and a visitor variant ("@handle hasn't saved any public
+  lists"). Also fixed a **copy bug**: the Lists empty state addressed the profile owner in the third
+  person ("@handle hasn't shared any public lists… when *they* make a list public"), but L5c 404s
+  non-owners before that branch — only the owner ever sees it, so it now speaks to them directly.
+  `FollowButton` already self-hides on your own profile, so no own-surface cleanup was needed.
+  Verified live: visitor Saved-empty card (Playfair heading, `paper`/`rounded-2xl`, owner CTA absent),
+  console clean, build green. *Owner-side variants are covered by typecheck/build + the identical L1e
+  owner-branch pattern verified live earlier — the browser session had signed out, and signing in
+  needs credentials.* Next: **L1h** modals.
 - **L1f — Discover V3 pass (per-screen port, 2 of 4):** a consistency + DRY pass on the already-V3
   Discover screen. Extracted a shared `ProductRow` (brand-initial thumbnail + Playfair name +
   brand·retailer meta + the app's SVG chevron) and used it in both places product rows appeared —

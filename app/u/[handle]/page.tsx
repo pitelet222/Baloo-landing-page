@@ -151,10 +151,20 @@ export default async function ProfilePage({ params, searchParams }: Params) {
 
         {activeTab === "lists" ? (
           lists.length === 0 ? (
-            <p className="mt-6 text-sm text-muted">
-              @{profile.handle} hasn&apos;t shared any public lists yet. When they make a list
-              public, it&apos;ll show up here.
-            </p>
+            // Owner-only in practice: a non-owner seeing zero lists means zero PUBLIC lists, and
+            // L5c 404s them above — so this speaks to the owner, not about them in the third person.
+            <div className="mt-6 rounded-2xl border border-line bg-paper p-8 text-center shadow-card">
+              <p className="font-display text-lg text-ink">No lists yet</p>
+              <p className="mx-auto mt-1.5 max-w-xs text-sm text-muted">
+                Make your first list — publish it and your profile joins the community.
+              </p>
+              <Link
+                href="/lists/new"
+                className="mt-4 inline-flex rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper transition hover:bg-ink/85"
+              >
+                New list
+              </Link>
+            </div>
           ) : (
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {lists.map((l) => (
@@ -163,9 +173,26 @@ export default async function ProfilePage({ params, searchParams }: Params) {
             </div>
           )
         ) : savedLists.length === 0 ? (
-          <p className="mt-6 text-sm text-muted">
-            No saved lists{isOwner ? " yet — tap Save on any list you want to keep." : "."}
-          </p>
+          <div className="mt-6 rounded-2xl border border-line bg-paper p-8 text-center shadow-card">
+            <p className="font-display text-lg text-ink">Nothing saved yet</p>
+            {isOwner ? (
+              <>
+                <p className="mx-auto mt-1.5 max-w-xs text-sm text-muted">
+                  Tap Save on any list you want to keep — they collect here.
+                </p>
+                <Link
+                  href="/discover"
+                  className="mt-4 inline-flex rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper transition hover:bg-ink/85"
+                >
+                  Browse lists
+                </Link>
+              </>
+            ) : (
+              <p className="mx-auto mt-1.5 max-w-xs text-sm text-muted">
+                @{profile.handle} hasn&rsquo;t saved any public lists.
+              </p>
+            )}
+          </div>
         ) : (
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             {savedLists.map((l) => (
