@@ -3,8 +3,9 @@
 // Sign in / sign up / upgrade modal (Order G2). Functional and token-styled; D-G2 restyles
 // later. House rule: friendly messages only, never raw errors.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase/client";
+import { Modal } from "@/components/Modal";
 
 export type AuthMode = "signin" | "signup" | "upgrade";
 
@@ -38,14 +39,6 @@ export function AuthModal({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
 
   async function submit() {
     const sb = supabaseBrowser();
@@ -104,14 +97,10 @@ export function AuthModal({
     mode === "signin" ? "Sign in" : mode === "signup" ? "Create your account" : "Save your account";
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/20 p-5"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="w-full max-w-sm animate-rise rounded-2xl border border-line bg-paper p-6 shadow-hero">
-        <h2 className="font-display text-xl text-ink">{title}</h2>
+    <Modal onClose={onClose} labelledBy="auth-modal-title" panelClassName="max-w-sm p-6">
+      <h2 id="auth-modal-title" className="font-display text-xl text-ink">
+          {title}
+        </h2>
         {mode === "upgrade" && (
           <p className="mt-1 text-sm text-muted">
             Keep everything you&apos;ve made as a guest — just add an email and password.
@@ -178,7 +167,6 @@ export function AuthModal({
             </div>
           </>
         )}
-      </div>
-    </div>
+    </Modal>
   );
 }

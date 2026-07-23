@@ -3,6 +3,7 @@
 // Report dialog (Order G9): a compact reason picker → POST /api/reports. Neutral, no alarm.
 
 import { useState } from "react";
+import { Modal } from "@/components/Modal";
 
 const REASONS: { value: string; label: string }[] = [
   { value: "spam", label: "Spam" },
@@ -40,19 +41,14 @@ export function ReportDialog({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/20 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-sm rounded-2xl border border-line bg-paper p-5 shadow-card"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {done ? (
+    <Modal onClose={onClose} labelledBy="report-dialog-title" panelClassName="max-w-sm p-5">
+      {done ? (
           <p className="py-4 text-center text-sm text-ink">Thanks — a moderator will take a look.</p>
         ) : (
           <>
-            <h2 className="font-display text-xl text-ink">Report this {targetType}</h2>
+            <h2 id="report-dialog-title" className="font-display text-xl text-ink">
+              Report this {targetType}
+            </h2>
             <p className="mt-1 text-sm text-muted">Tell us what&apos;s wrong. This is private.</p>
             <div className="mt-4 space-y-1.5">
               {REASONS.map((r) => (
@@ -93,7 +89,6 @@ export function ReportDialog({
             </div>
           </>
         )}
-      </div>
-    </div>
+    </Modal>
   );
 }

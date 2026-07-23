@@ -6,6 +6,20 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **L1h — Modals V3 pass (per-screen port, 4 of 4) — completes the V3 design port (L1).** The three
+  overlays had drifted, so they now share one shell: new `components/Modal.tsx` owns the backdrop,
+  panel, Escape, backdrop-close and dialog semantics. **`ReportDialog` gained the most** — it had
+  **no Escape handler at all**, and closed via `onClick`+`stopPropagation`, which fires when you press
+  *inside* the panel and release on the backdrop (dragging to select text closed it under you); it now
+  uses the `onMouseDown`+target-check the others already had, plus `shadow-hero`/`animate-rise`.
+  `AuthModal` and the header `SearchOverlay` dropped their duplicated Escape effects. All three gained
+  **`role="dialog"` + `aria-modal="true"` + `aria-labelledby`/`aria-label`** — none announced
+  themselves as dialogs before. `AddToList` is an anchored popover (already Escape-aware) and was
+  deliberately left out. Verified live: both reachable modals show the dialog semantics (auth's
+  `aria-labelledby` resolves to its visible "Sign in" heading), Escape closes both, backdrop-press
+  closes, **press-inside stays open**, console clean, build green. *`ReportDialog` needs a signed-in
+  session to open, so it wasn't exercised in-browser — its behaviour now comes entirely from the shell
+  proven on the other two.*
 - **L1g — Profile V3 pass (per-screen port, 3 of 4):** carried L1e's editorial empty-state card to
   `/u/[handle]`. Both tabs' bare `text-sm text-muted` lines became warm cards: **Lists** empty →
   "No lists yet" + a **New list** CTA, **Saved** empty → "Nothing saved yet" with an owner variant

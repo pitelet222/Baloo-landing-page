@@ -12,6 +12,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { validateUrl, looksLikeUrl } from "@/lib/retailers";
+import { Modal } from "@/components/Modal";
 
 export function HeaderSearch() {
   const pathname = usePathname() ?? "";
@@ -61,14 +62,10 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
   const isUrl = looksLikeUrl(value);
   const hasText = value.trim().length > 0;
 
+  // Escape + backdrop close live in the shared Modal shell (L1h); this just takes focus.
   useEffect(() => {
     inputRef.current?.focus();
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, []);
 
   function submit() {
     const v = value.trim();
@@ -88,14 +85,8 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-ink/20 p-5 pt-[12vh]"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="w-full max-w-xl animate-rise rounded-2xl border border-line bg-paper p-4 shadow-hero">
-        <div className="flex items-center gap-2 rounded-[14px] border border-line bg-canvas p-1.5 pl-2.5 transition focus-within:border-natural/50 focus-within:ring-4 focus-within:ring-natural/10">
+    <Modal onClose={onClose} align="top" panelClassName="max-w-xl p-4" label="Search or paste a product link">
+      <div className="flex items-center gap-2 rounded-[14px] border border-line bg-canvas p-1.5 pl-2.5 transition focus-within:border-natural/50 focus-within:ring-4 focus-within:ring-natural/10">
           {hasText && (
             <span className="hidden shrink-0 rounded-full bg-paper px-2.5 py-1 text-[11px] font-medium text-muted sm:inline">
               {isUrl ? "Product link" : "Search"}
@@ -131,8 +122,7 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
             Paste a supermarket link to analyse it, or describe what you&rsquo;re after to search lists.
           </p>
         )}
-      </div>
-    </div>
+    </Modal>
   );
 }
 
