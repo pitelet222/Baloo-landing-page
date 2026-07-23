@@ -6,6 +6,22 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **S3 — Custom SMTP (code fix + runbook; the setup itself is M's):** S3 is an account, an API key, a
+  dashboard form and DNS records — none of it doable from the repo. What *was* doable turned out to
+  matter: `AuthModal` called `signUp()` (and the guest→account `updateUser()`) **without
+  `emailRedirectTo`**, so confirmation links fell back to the project's **Site URL**. If that's still
+  `localhost:3000` — the default during dev — every production signup mails someone a **localhost
+  link**, which is exactly the silent "signup breaks at launch" failure S3 exists to prevent. Both
+  calls now pin `${window.location.origin}/auth/callback`, so a link works from production, a preview
+  deploy or local dev and lands on the route that exchanges the PKCE code for a session. *This only
+  works together with the Supabase **Redirect URLs** allowlist* — documented. Added
+  [`docs/EMAIL_SETUP.md`](EMAIL_SETUP.md): the full runbook (Resend domain on a sending subdomain,
+  SPF/DKIM/DMARC with a `p=none`→`quarantine`→`reject` progression, the exact Supabase SMTP fields,
+  URL configuration, the auth rate-limit that bites at launch, and end-to-end verification incl.
+  checking SPF/DKIM/DMARC all PASS in Gmail). Flagged along the way: **there is no password-reset UI**
+  — `AuthModal` has no "forgot password", so the reset template has nothing to trigger it.
+  **Not verifiable here:** the email path can't be tested until SMTP is actually configured, and I
+  didn't create test accounts in Supabase to try.
 - **L4 — Seed supply (tooling; content still blocked):** `scripts/seed-supply.ts` +
   `npm run db:seed-supply`. **Dry-run by default** — it prints the plan and the spend estimate and
   writes nothing until `--commit`. It creates the four official accounts and the curated lists, and

@@ -52,7 +52,16 @@ export function AuthModal({
         if (error) return setError(friendly(error.message, mode));
         onDone();
       } else if (mode === "signup") {
-        const { data, error } = await sb.auth.signUp({ email, password });
+        // emailRedirectTo (S3): without it the confirmation link falls back to the project's Site
+        // URL — which is how a production signup ends up mailing someone a localhost link. Pinning
+        // it to THIS origin's /auth/callback means the link works from prod, a preview deploy or
+        // local dev, and lands on the route that exchanges the PKCE code for a session.
+        // Each origin must also be on Supabase's Redirect URLs allowlist.
+        const { data, error } = await sb.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+        });
         if (error) return setError(friendly(error.message, mode));
         if (!data.session) {
           setNotice("Almost there — check your inbox to confirm your email.");
@@ -61,8 +70,12 @@ export function AuthModal({
         onDone();
       } else {
         // upgrade: attach email+password to the CURRENT (anonymous) user — same user id, so
-        // everything already created as a guest survives.
-        const { error } = await sb.auth.updateUser({ email, password });
+        // everything already created as a guest survives. Same emailRedirectTo reasoning as signup:
+        // the email-change confirmation must come back to this origin's callback, not the Site URL.
+        const { error } = await sb.auth.updateUser(
+          { email, password },
+          { emailRedirectTo: `${window.location.origin}/auth/callback` },
+        );
         if (error) return setError(friendly(error.message, mode));
         setNotice("Saved — if we sent you a confirmation email, click it to finish.");
       }

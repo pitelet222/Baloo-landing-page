@@ -116,6 +116,15 @@ Three holes the audit found in shipped code:
   guests analyse-only; `useAuthGate()` on the client. **Captcha deferred** (Turnstile — needs your
   Cloudflare + Supabase setup). Note: anonymous sign-in is currently disabled on the Supabase project.
 - **S3 — custom SMTP** (Resend) + SPF/DKIM/DMARC. *Signup breaks at launch without it.*
+  *(~ code fix + runbook shipped; the setup is M's.)* Full step-by-step in
+  [`docs/EMAIL_SETUP.md`](docs/EMAIL_SETUP.md) — Resend on a sending subdomain, the three DNS records
+  (DMARC starting at `p=none`), the exact Supabase SMTP fields, URL configuration, the auth
+  rate-limit, and end-to-end verification. **Code fix already in:** `AuthModal` had no
+  `emailRedirectTo`, so confirmation links fell back to the Site URL — i.e. a production signup could
+  mail someone a **localhost** link. Both signup and the guest→account upgrade now pin
+  `${origin}/auth/callback`; this needs the matching **Redirect URLs** allowlist entries to work.
+  **Also found:** there is **no password-reset UI** (`AuthModal` has no "forgot password"), so the
+  reset email template has nothing to trigger it — worth adding before launch. — **CC done / M owed**
 - **S4** write rate limits/caps · **S5** ✅ security headers shipped (enforcing safe set + report-only
   CSP); remaining: M flips leaked-password + Vercel WAF toggles, later flip CSP to enforcing · **S6**
   error monitoring (Sentry) · **S7** unsubscribe **and** account deletion (GDPR; no delete flow

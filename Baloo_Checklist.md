@@ -80,7 +80,17 @@
 - [ ] **S2 (captcha) — DEFERRED**: Cloudflare Turnstile on signup + anonymous (Supabase-native).
       Needs a Cloudflare account + the secret in the Supabase dashboard + `NEXT_PUBLIC_TURNSTILE_SITE_KEY`;
       then wire the widget into the auth modal. — **M sets up infra / CC wires**
-- [ ] **S3 — Custom SMTP** (Resend; Loops stays marketing) + SPF/DKIM/DMARC on baloo.life.
+- [~] **S3 — Custom SMTP** (Resend; Loops stays marketing) + SPF/DKIM/DMARC on baloo.life.
+  - [x] **Code fix** ✅ `emailRedirectTo` on signup + guest→account upgrade — confirmation links used
+        to fall back to the Site URL (a prod signup could mail a **localhost** link). — **CC**
+  - [x] **Runbook** ✅ [`docs/EMAIL_SETUP.md`](docs/EMAIL_SETUP.md) — Resend, DNS, Supabase SMTP fields,
+        URL config, rate limit, verification. — **CC**
+  - [ ] Resend account + `baloo.life` sending subdomain verified — **M**
+  - [ ] SPF + DKIM (from Resend) + DMARC (`p=none` first) DNS records — **M**
+  - [ ] Supabase custom SMTP fields + raise the auth email rate limit — **M**
+  - [ ] Supabase **Site URL** + **Redirect URLs** allowlist (prod, `*.vercel.app`, localhost) — **M**
+  - [ ] End-to-end test: real inbox + Gmail, SPF/DKIM/DMARC all PASS, link lands signed in — **M**
+  - [ ] *Found during S3:* **no password-reset UI** exists (`AuthModal` has no "forgot password") — **CC**
       Supabase's built-in mailer is dev-only + rate-limited → **confirmation emails silently stop
       arriving at launch**. — **M/CC**
 - [ ] **S4 — Write rate limits + volume caps** (lists/day, items/list, comments/min, follows/min) — **CC**
