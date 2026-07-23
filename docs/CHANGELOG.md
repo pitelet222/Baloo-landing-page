@@ -6,6 +6,21 @@
 > [`ARCHITECTURE.md`](ARCHITECTURE.md); what's *planned* lives in `Baloo_Launch_Plan.md`.
 
 ## Unreleased / in progress
+- **L4 — Seed supply (tooling; content still blocked):** `scripts/seed-supply.ts` +
+  `npm run db:seed-supply`. **Dry-run by default** — it prints the plan and the spend estimate and
+  writes nothing until `--commit`. It creates the four official accounts and the curated lists, and
+  analyses every product through the **same pipeline a user's paste uses** (Firecrawl → Claude extract
+  → Claude analyse → ingest), so seeded lists carry real label-derived breakdowns rather than
+  hand-written ones. Safety properties, all deliberate: **no saves/follows/votes are ever written**
+  (the locked "seed supply, never fake demand" rule); accounts are created **password-less** so the
+  script never handles credentials (set them in Supabase); URLs are validated against
+  `SUPPORTED_RETAILERS` *before* any spend and it refuses to commit if any fail; a list's products are
+  analysed *before* the list is created, so a mid-run failure leaves nothing half-built and a re-run
+  retries cleanly. Verified: dry run reports 4 accounts / 4 lists / 0 products and exits without
+  writing; the retailer guard rejects a Mercadona URL and accepts Tesco/Target. **Still blocked on
+  M/J:** the editorial product picks per list, spend authorisation (~20 analyses), the dev-vs-prod
+  target, and "Mercadona essentials" — Mercadona isn't a supported retailer, so that fifth list can't
+  be built until mercadona.es joins the retailer set (Tier C).
 - **L2 — Social sharing (the growth loop):** Share was a single button that called
   `navigator.share({url})` and fell back to the clipboard — on desktop, where `navigator.share`
   usually doesn't exist, that silently meant "Link copied" with no channel choice, and it never shared

@@ -65,9 +65,22 @@ where they overlap, **this ordering wins for launch**. Working board: the `Baloo
     press-inside/release-outside. — **CC**
   - ✅ **L1 is COMPLETE** — the V3 design port has landed across the whole app (world → home → analysis
     → shell + search → lists → discover → profile → modals).
-- **L4 — Seed supply.** Official accounts (**@baloo, @balooteam, @proteinpicks, @kidslunchbox**) + a
-  set of genuinely good curated lists (Best protein yogurts · Cereals I'd buy again · Ice creams
-  under 5 ingredients · Best snacks for kids · Mercadona essentials). An empty community is a dead one.
+- **L4 — Seed supply.** *(~ tooling shipped, content blocked.)* `scripts/seed-supply.ts`
+  (`npm run db:seed-supply`, **dry-run by default**) creates the official accounts
+  (**@baloo, @balooteam, @proteinpicks, @kidslunchbox**) and the curated lists, analysing every
+  product through the **real pipeline** so seeded lists carry genuine label-derived breakdowns. It
+  never writes a save/follow/vote (**real numbers only**), never handles passwords (accounts are made
+  password-less; set them in Supabase), validates retailers before spending, and analyses a list's
+  products *before* creating it so a failure leaves nothing half-built. **Three things block the
+  actual seeding — all need M/J:**
+  1. **Editorial picks** — the four list themes are locked but the product URLs are empty. Someone has
+     to choose real products (from a supported retailer) per list.
+  2. **Spend authorisation** — each product costs 1 Firecrawl scrape + 2 Claude calls. ~5 products ×
+     4 lists ≈ 20 analyses. The dry run prints the estimate.
+  3. **"Mercadona essentials" can't be built** — Mercadona is not in `SUPPORTED_RETAILERS`
+     (Whole Foods · Ocado · Tesco · Target · Kroger), so its URLs are rejected by validation *and* by
+     `/api/extract`. Needs mercadona.es added to the retailer set first (Tier C, "more scrape sites").
+  Also decide: seed against **dev or production** Supabase. — **CC done / M+J owed**
 - **L5c — Visibility auto-public.** ✅ **shipped.** A profile is public only once it has ≥1 public list;
   `/u/[handle]` 404s for non-owners of a 0-public-list profile (generic metadata, no name/bio leak),
   the owner sees their own with a "publish a list to go public" nudge, and Share is hidden until then.

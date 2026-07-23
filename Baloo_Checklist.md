@@ -47,7 +47,15 @@
     - [x] **L1h — modals** ✅ shipped: shared `Modal` shell (backdrop + panel + Escape + robust
           backdrop-close + `role="dialog"`/`aria-modal`/labelling) adopted by AuthModal, the header
           SearchOverlay and ReportDialog — the last had no Escape and a fragile click-close. Verified.
-- [ ] **L4 — Seed supply**: official accounts (@baloo/@balooteam/@proteinpicks/@kidslunchbox) + genuinely good starter lists — **M/CC**
+- [~] **L4 — Seed supply**: official accounts (@baloo/@balooteam/@proteinpicks/@kidslunchbox) + genuinely good starter lists — **M/J/CC**
+  - [x] **Tooling** ✅ `scripts/seed-supply.ts` (`npm run db:seed-supply`, dry-run by default): creates the
+        accounts + lists, analyses each product through the real pipeline, never writes saves/follows
+        (real numbers only), never handles passwords, validates retailers before spending. — **CC**
+  - [ ] **Editorial picks**: real product URLs (supported retailer) for each of the 4 lists — **J/M**
+  - [ ] **Authorise the spend**: ~20 products × (1 Firecrawl + 2 Claude calls) — **M**
+  - [ ] **Decide target**: seed dev or production Supabase — **M**
+  - [ ] **"Mercadona essentials" blocked**: Mercadona isn't in `SUPPORTED_RETAILERS` — needs
+        mercadona.es added first (Tier C, more scrape sites) — **J/M**
 - [x] **L5c — Visibility auto-public** ✅ shipped: `/u/[handle]` 404s for non-owners of a 0-public-list
       profile + generic metadata; owner sees own + a "publish to go public" nudge (Share hidden).
       Discovery surfaces already compliant. Verified (non-owner 404 / owner nudge / public unaffected). — **CC**

@@ -11,6 +11,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "npx -y tsx scripts/seed-dev.ts",
+    "db:seed-supply": "npx -y tsx scripts/seed-supply.ts",
     "db:check": "npx -y tsx scripts/check-db.ts"
   },
   "dependencies": {
